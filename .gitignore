@@ -38,3 +38,5 @@
 /cmake-build-release/
 /cmake-build-debug-remote/
 /cmake-build-release-remote/
+/cmake-build-debug-remote-iut/
+/cmake-build-release-remote-iut/
