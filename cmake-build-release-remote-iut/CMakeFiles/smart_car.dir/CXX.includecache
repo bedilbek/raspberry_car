@@ -1,0 +1,32 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/tmp/tmp.yE1kzQPFFA/controller.cpp
+controller.h
+/tmp/tmp.yE1kzQPFFA/controller.h
+cstdio
+-
+wiringPi.h
+-
+softPwm.h
+-
+
+/tmp/tmp.yE1kzQPFFA/controller.h
+
+/tmp/tmp.yE1kzQPFFA/main.cpp
+cstdio
+-
+wiringPi.h
+-
+iostream
+-
+istream
+-
+controller.h
+/tmp/tmp.yE1kzQPFFA/controller.h
+
