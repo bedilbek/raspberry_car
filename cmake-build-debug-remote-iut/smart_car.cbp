@@ -90,6 +90,12 @@
 		<Unit filename="/tmp/tmp.yE1kzQPFFA/controller.h">
 			<Option target="smart_car"/>
 		</Unit>
+		<Unit filename="/tmp/tmp.yE1kzQPFFA/libSonar.cpp">
+			<Option target="smart_car"/>
+		</Unit>
+		<Unit filename="/tmp/tmp.yE1kzQPFFA/libSonar.h">
+			<Option target="smart_car"/>
+		</Unit>
 		<Unit filename="/tmp/tmp.yE1kzQPFFA/main.cpp">
 			<Option target="smart_car"/>
 		</Unit>

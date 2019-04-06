@@ -150,6 +150,33 @@ controller.cpp.s:
 	$(MAKE) -f CMakeFiles/smart_car.dir/build.make CMakeFiles/smart_car.dir/controller.cpp.s
 .PHONY : controller.cpp.s
 
+libSonar.o: libSonar.cpp.o
+
+.PHONY : libSonar.o
+
+# target to build an object file
+libSonar.cpp.o:
+	$(MAKE) -f CMakeFiles/smart_car.dir/build.make CMakeFiles/smart_car.dir/libSonar.cpp.o
+.PHONY : libSonar.cpp.o
+
+libSonar.i: libSonar.cpp.i
+
+.PHONY : libSonar.i
+
+# target to preprocess a source file
+libSonar.cpp.i:
+	$(MAKE) -f CMakeFiles/smart_car.dir/build.make CMakeFiles/smart_car.dir/libSonar.cpp.i
+.PHONY : libSonar.cpp.i
+
+libSonar.s: libSonar.cpp.s
+
+.PHONY : libSonar.s
+
+# target to generate assembly for a file
+libSonar.cpp.s:
+	$(MAKE) -f CMakeFiles/smart_car.dir/build.make CMakeFiles/smart_car.dir/libSonar.cpp.s
+.PHONY : libSonar.cpp.s
+
 main.o: main.cpp.o
 
 .PHONY : main.o
@@ -189,6 +216,9 @@ help:
 	@echo "... controller.o"
 	@echo "... controller.i"
 	@echo "... controller.s"
+	@echo "... libSonar.o"
+	@echo "... libSonar.i"
+	@echo "... libSonar.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

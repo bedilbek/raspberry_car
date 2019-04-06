@@ -1,6 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/smart_car.dir/main.cpp.o"
   "CMakeFiles/smart_car.dir/controller.cpp.o"
+  "CMakeFiles/smart_car.dir/libSonar.cpp.o"
   "smart_car.pdb"
   "smart_car"
 )

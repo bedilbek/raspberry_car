@@ -3,36 +3,28 @@
 #include <iostream>
 #include <istream>
 #include <ctime>
+#include <stdio.h>
+#include <wiringPi.h>
+#include <softPwm.h>
+#include <zconf.h>
+#include "libSonar.h"
 #include "controller.h"
-#include <raspicam/raspicam.h>
 
 using namespace std;
 
 int main() {
-    if (wiringPiSetup() == -1)
+    if (wiringPiSetup() == -1) {
         return 0;
-
+    }
 
     Controller controller;
-    controller.set_pin_mode();
     controller.init_dc_motor();
-
-    while (true) {
-        char command;
-        cin >> command;
-        if (command == 'a') {
-            controller.left(40);
-        } else if (command == 'w') {
-            controller.forward(40);
-        } else if (command == 's') {
-            controller.backward(40);
-        } else if (command == 'd') {
-            controller.right(40);
-        } else {
-            break;
-        }
-    }
+    controller.forward(80);
+    delay(1000);
+    controller.backward(80);
+    delay(1000);
     controller.stop();
+
     return 0;
 }
 

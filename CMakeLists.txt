@@ -3,6 +3,10 @@ project(smart_car)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(smart_car main.cpp controller.cpp )
+add_executable(smart_car main.cpp controller.cpp libSonar.cpp)
 link_directories(/usr/lib)
-target_link_libraries(smart_car wiringPi crypt pthread rt m raspicam)
+target_link_libraries(smart_car wiringPi crypt pthread rt m raspicam curses)
+
+link_directories(/usr/local/lib)
+target_link_libraries(smart_car opencv_core opencv_highgui)
+

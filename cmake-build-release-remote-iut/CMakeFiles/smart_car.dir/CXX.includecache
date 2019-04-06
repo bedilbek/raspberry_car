@@ -9,7 +9,7 @@
 /tmp/tmp.yE1kzQPFFA/controller.cpp
 controller.h
 /tmp/tmp.yE1kzQPFFA/controller.h
-cstdio
+stdio.h
 -
 wiringPi.h
 -
@@ -27,6 +27,24 @@ iostream
 -
 istream
 -
+ctime
+-
 controller.h
 /tmp/tmp.yE1kzQPFFA/controller.h
+raspicam/raspicam.h
+-
+stdio.h
+-
+wiringPi.h
+-
+softPwm.h
+-
+pthread.h
+-
+cuchar
+-
+curses.h
+-
+opencv2/opencv.hpp
+-
 
