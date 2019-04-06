@@ -8,12 +8,13 @@ add_executable(joystick joystick.cpp)
 add_executable(main main.cpp)
 
 add_library(controller controller.cpp)
-add_library(ir_wall_detect ir_wall_detector.cpp)
+add_library(ir_wall ir_wall_detector.cpp)
+add_library(ir_line ir_line_detector.cpp)
 
 link_directories(/usr/lib)
 target_link_libraries(camera wiringPi crypt pthread rt m)
 target_link_libraries(joystick wiringPi crypt pthread rt m controller)
-target_link_libraries(main wiringPi crypt pthread rt m ir_wall_detect)
+target_link_libraries(main wiringPi crypt pthread rt m ir_wall ir_line)
 
 link_directories(/usr/local/lib)
 target_link_libraries(camera opencv_core opencv_highgui raspicam_cv)
