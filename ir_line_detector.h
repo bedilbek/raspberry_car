@@ -8,6 +8,9 @@
 #define IR_LINE_LEFT    10
 #define IR_LINE_RIGHT   11
 
+// from white surface receives 0
+// from black surface receives 1
+
 class IRLineDetector {
 public:
     IRLineDetector();
