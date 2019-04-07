@@ -18,20 +18,18 @@ softPwm.h
 
 /tmp/tmp.yE1kzQPFFA/controller.h
 
+/tmp/tmp.yE1kzQPFFA/libSonar.h
+
 /tmp/tmp.yE1kzQPFFA/main.cpp
 cstdio
 -
-wiringPi.h
--
 iostream
 -
-istream
+wiringPi.h
+-
+fstream
 -
 ctime
--
-controller.h
-/tmp/tmp.yE1kzQPFFA/controller.h
-raspicam/raspicam.h
 -
 stdio.h
 -
@@ -39,12 +37,12 @@ wiringPi.h
 -
 softPwm.h
 -
-pthread.h
+zconf.h
 -
-cuchar
--
-curses.h
--
-opencv2/opencv.hpp
--
+libSonar.h
+/tmp/tmp.yE1kzQPFFA/libSonar.h
+controller.h
+/tmp/tmp.yE1kzQPFFA/controller.h
+ir_wall_detector.h
+/tmp/tmp.yE1kzQPFFA/ir_wall_detector.h
 

@@ -121,5 +121,10 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "CMakeFiles/smart_car.dir/DependInfo.cmake"
+  "CMakeFiles/ir_wall.dir/DependInfo.cmake"
+  "CMakeFiles/camera.dir/DependInfo.cmake"
+  "CMakeFiles/main.dir/DependInfo.cmake"
+  "CMakeFiles/ir_line.dir/DependInfo.cmake"
+  "CMakeFiles/joystick.dir/DependInfo.cmake"
+  "CMakeFiles/controller.dir/DependInfo.cmake"
   )

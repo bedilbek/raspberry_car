@@ -111,17 +111,109 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named smart_car
+# Target rules for targets named ir_wall
 
 # Build rule for target.
-smart_car: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 smart_car
-.PHONY : smart_car
+ir_wall: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 ir_wall
+.PHONY : ir_wall
 
 # fast build rule for target.
-smart_car/fast:
-	$(MAKE) -f CMakeFiles/smart_car.dir/build.make CMakeFiles/smart_car.dir/build
-.PHONY : smart_car/fast
+ir_wall/fast:
+	$(MAKE) -f CMakeFiles/ir_wall.dir/build.make CMakeFiles/ir_wall.dir/build
+.PHONY : ir_wall/fast
+
+#=============================================================================
+# Target rules for targets named camera
+
+# Build rule for target.
+camera: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 camera
+.PHONY : camera
+
+# fast build rule for target.
+camera/fast:
+	$(MAKE) -f CMakeFiles/camera.dir/build.make CMakeFiles/camera.dir/build
+.PHONY : camera/fast
+
+#=============================================================================
+# Target rules for targets named main
+
+# Build rule for target.
+main: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 main
+.PHONY : main
+
+# fast build rule for target.
+main/fast:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
+.PHONY : main/fast
+
+#=============================================================================
+# Target rules for targets named ir_line
+
+# Build rule for target.
+ir_line: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 ir_line
+.PHONY : ir_line
+
+# fast build rule for target.
+ir_line/fast:
+	$(MAKE) -f CMakeFiles/ir_line.dir/build.make CMakeFiles/ir_line.dir/build
+.PHONY : ir_line/fast
+
+#=============================================================================
+# Target rules for targets named joystick
+
+# Build rule for target.
+joystick: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 joystick
+.PHONY : joystick
+
+# fast build rule for target.
+joystick/fast:
+	$(MAKE) -f CMakeFiles/joystick.dir/build.make CMakeFiles/joystick.dir/build
+.PHONY : joystick/fast
+
+#=============================================================================
+# Target rules for targets named controller
+
+# Build rule for target.
+controller: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 controller
+.PHONY : controller
+
+# fast build rule for target.
+controller/fast:
+	$(MAKE) -f CMakeFiles/controller.dir/build.make CMakeFiles/controller.dir/build
+.PHONY : controller/fast
+
+camera.o: camera.cpp.o
+
+.PHONY : camera.o
+
+# target to build an object file
+camera.cpp.o:
+	$(MAKE) -f CMakeFiles/camera.dir/build.make CMakeFiles/camera.dir/camera.cpp.o
+.PHONY : camera.cpp.o
+
+camera.i: camera.cpp.i
+
+.PHONY : camera.i
+
+# target to preprocess a source file
+camera.cpp.i:
+	$(MAKE) -f CMakeFiles/camera.dir/build.make CMakeFiles/camera.dir/camera.cpp.i
+.PHONY : camera.cpp.i
+
+camera.s: camera.cpp.s
+
+.PHONY : camera.s
+
+# target to generate assembly for a file
+camera.cpp.s:
+	$(MAKE) -f CMakeFiles/camera.dir/build.make CMakeFiles/camera.dir/camera.cpp.s
+.PHONY : camera.cpp.s
 
 controller.o: controller.cpp.o
 
@@ -129,7 +221,7 @@ controller.o: controller.cpp.o
 
 # target to build an object file
 controller.cpp.o:
-	$(MAKE) -f CMakeFiles/smart_car.dir/build.make CMakeFiles/smart_car.dir/controller.cpp.o
+	$(MAKE) -f CMakeFiles/controller.dir/build.make CMakeFiles/controller.dir/controller.cpp.o
 .PHONY : controller.cpp.o
 
 controller.i: controller.cpp.i
@@ -138,7 +230,7 @@ controller.i: controller.cpp.i
 
 # target to preprocess a source file
 controller.cpp.i:
-	$(MAKE) -f CMakeFiles/smart_car.dir/build.make CMakeFiles/smart_car.dir/controller.cpp.i
+	$(MAKE) -f CMakeFiles/controller.dir/build.make CMakeFiles/controller.dir/controller.cpp.i
 .PHONY : controller.cpp.i
 
 controller.s: controller.cpp.s
@@ -147,35 +239,89 @@ controller.s: controller.cpp.s
 
 # target to generate assembly for a file
 controller.cpp.s:
-	$(MAKE) -f CMakeFiles/smart_car.dir/build.make CMakeFiles/smart_car.dir/controller.cpp.s
+	$(MAKE) -f CMakeFiles/controller.dir/build.make CMakeFiles/controller.dir/controller.cpp.s
 .PHONY : controller.cpp.s
 
-libSonar.o: libSonar.cpp.o
+ir_line_detector.o: ir_line_detector.cpp.o
 
-.PHONY : libSonar.o
+.PHONY : ir_line_detector.o
 
 # target to build an object file
-libSonar.cpp.o:
-	$(MAKE) -f CMakeFiles/smart_car.dir/build.make CMakeFiles/smart_car.dir/libSonar.cpp.o
-.PHONY : libSonar.cpp.o
+ir_line_detector.cpp.o:
+	$(MAKE) -f CMakeFiles/ir_line.dir/build.make CMakeFiles/ir_line.dir/ir_line_detector.cpp.o
+.PHONY : ir_line_detector.cpp.o
 
-libSonar.i: libSonar.cpp.i
+ir_line_detector.i: ir_line_detector.cpp.i
 
-.PHONY : libSonar.i
+.PHONY : ir_line_detector.i
 
 # target to preprocess a source file
-libSonar.cpp.i:
-	$(MAKE) -f CMakeFiles/smart_car.dir/build.make CMakeFiles/smart_car.dir/libSonar.cpp.i
-.PHONY : libSonar.cpp.i
+ir_line_detector.cpp.i:
+	$(MAKE) -f CMakeFiles/ir_line.dir/build.make CMakeFiles/ir_line.dir/ir_line_detector.cpp.i
+.PHONY : ir_line_detector.cpp.i
 
-libSonar.s: libSonar.cpp.s
+ir_line_detector.s: ir_line_detector.cpp.s
 
-.PHONY : libSonar.s
+.PHONY : ir_line_detector.s
 
 # target to generate assembly for a file
-libSonar.cpp.s:
-	$(MAKE) -f CMakeFiles/smart_car.dir/build.make CMakeFiles/smart_car.dir/libSonar.cpp.s
-.PHONY : libSonar.cpp.s
+ir_line_detector.cpp.s:
+	$(MAKE) -f CMakeFiles/ir_line.dir/build.make CMakeFiles/ir_line.dir/ir_line_detector.cpp.s
+.PHONY : ir_line_detector.cpp.s
+
+ir_wall_detector.o: ir_wall_detector.cpp.o
+
+.PHONY : ir_wall_detector.o
+
+# target to build an object file
+ir_wall_detector.cpp.o:
+	$(MAKE) -f CMakeFiles/ir_wall.dir/build.make CMakeFiles/ir_wall.dir/ir_wall_detector.cpp.o
+.PHONY : ir_wall_detector.cpp.o
+
+ir_wall_detector.i: ir_wall_detector.cpp.i
+
+.PHONY : ir_wall_detector.i
+
+# target to preprocess a source file
+ir_wall_detector.cpp.i:
+	$(MAKE) -f CMakeFiles/ir_wall.dir/build.make CMakeFiles/ir_wall.dir/ir_wall_detector.cpp.i
+.PHONY : ir_wall_detector.cpp.i
+
+ir_wall_detector.s: ir_wall_detector.cpp.s
+
+.PHONY : ir_wall_detector.s
+
+# target to generate assembly for a file
+ir_wall_detector.cpp.s:
+	$(MAKE) -f CMakeFiles/ir_wall.dir/build.make CMakeFiles/ir_wall.dir/ir_wall_detector.cpp.s
+.PHONY : ir_wall_detector.cpp.s
+
+joystick.o: joystick.cpp.o
+
+.PHONY : joystick.o
+
+# target to build an object file
+joystick.cpp.o:
+	$(MAKE) -f CMakeFiles/joystick.dir/build.make CMakeFiles/joystick.dir/joystick.cpp.o
+.PHONY : joystick.cpp.o
+
+joystick.i: joystick.cpp.i
+
+.PHONY : joystick.i
+
+# target to preprocess a source file
+joystick.cpp.i:
+	$(MAKE) -f CMakeFiles/joystick.dir/build.make CMakeFiles/joystick.dir/joystick.cpp.i
+.PHONY : joystick.cpp.i
+
+joystick.s: joystick.cpp.s
+
+.PHONY : joystick.s
+
+# target to generate assembly for a file
+joystick.cpp.s:
+	$(MAKE) -f CMakeFiles/joystick.dir/build.make CMakeFiles/joystick.dir/joystick.cpp.s
+.PHONY : joystick.cpp.s
 
 main.o: main.cpp.o
 
@@ -183,7 +329,7 @@ main.o: main.cpp.o
 
 # target to build an object file
 main.cpp.o:
-	$(MAKE) -f CMakeFiles/smart_car.dir/build.make CMakeFiles/smart_car.dir/main.cpp.o
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cpp.o
 .PHONY : main.cpp.o
 
 main.i: main.cpp.i
@@ -192,7 +338,7 @@ main.i: main.cpp.i
 
 # target to preprocess a source file
 main.cpp.i:
-	$(MAKE) -f CMakeFiles/smart_car.dir/build.make CMakeFiles/smart_car.dir/main.cpp.i
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cpp.i
 .PHONY : main.cpp.i
 
 main.s: main.cpp.s
@@ -201,7 +347,7 @@ main.s: main.cpp.s
 
 # target to generate assembly for a file
 main.cpp.s:
-	$(MAKE) -f CMakeFiles/smart_car.dir/build.make CMakeFiles/smart_car.dir/main.cpp.s
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cpp.s
 .PHONY : main.cpp.s
 
 # Help Target
@@ -212,13 +358,27 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... smart_car"
+	@echo "... ir_wall"
+	@echo "... camera"
+	@echo "... main"
+	@echo "... ir_line"
+	@echo "... joystick"
+	@echo "... controller"
+	@echo "... camera.o"
+	@echo "... camera.i"
+	@echo "... camera.s"
 	@echo "... controller.o"
 	@echo "... controller.i"
 	@echo "... controller.s"
-	@echo "... libSonar.o"
-	@echo "... libSonar.i"
-	@echo "... libSonar.s"
+	@echo "... ir_line_detector.o"
+	@echo "... ir_line_detector.i"
+	@echo "... ir_line_detector.s"
+	@echo "... ir_wall_detector.o"
+	@echo "... ir_wall_detector.i"
+	@echo "... ir_wall_detector.s"
+	@echo "... joystick.o"
+	@echo "... joystick.i"
+	@echo "... joystick.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

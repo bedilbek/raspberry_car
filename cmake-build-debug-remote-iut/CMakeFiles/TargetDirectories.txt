@@ -1,3 +1,0 @@
-/tmp/tmp.yE1kzQPFFA/cmake-build-debug-remote-iut/CMakeFiles/rebuild_cache.dir
-/tmp/tmp.yE1kzQPFFA/cmake-build-debug-remote-iut/CMakeFiles/edit_cache.dir
-/tmp/tmp.yE1kzQPFFA/cmake-build-debug-remote-iut/CMakeFiles/smart_car.dir
