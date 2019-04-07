@@ -142,8 +142,8 @@ clean: CMakeFiles/camera.dir/clean
 # Target rules for target CMakeFiles/main.dir
 
 # All Build rule for target.
-CMakeFiles/main.dir/all: CMakeFiles/ir_line.dir/all
 CMakeFiles/main.dir/all: CMakeFiles/ir_wall.dir/all
+CMakeFiles/main.dir/all: CMakeFiles/ir_line.dir/all
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/depend
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/tmp/tmp.yE1kzQPFFA/cmake-build-debug-remote-iut/CMakeFiles --progress-num=11,12 "Built target main"

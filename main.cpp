@@ -10,6 +10,7 @@
 #include "libSonar.h"
 #include "controller.h"
 #include "ir_wall_detector.h"
+#include "ir_line_detector.h"
 
 using namespace std;
 
@@ -18,15 +19,24 @@ int main() {
         return 0;
 
     IRWallDetector ir_wall_detect;
+    IRLineDetector ir_line_detect;
 
     while (1) {
 
         if (ir_wall_detect.left_detected()) {
-            std::cout << "Move Right" << std::endl;
+            std::cout << "Left Obstacle" << std::endl;
         }
 
         if (ir_wall_detect.right_detected()) {
-            std::cout << "Move Left" << std::endl;
+            std::cout << "Right Obstacle" << std::endl;
+        }
+
+        if (ir_line_detect.right_detected()) {
+            std::cout << "Right Line" << std::endl;
+        }
+
+        if (ir_line_detect.left_detected()) {
+            std::cout << "Left Line" << std::endl;
         }
     }
     return 0;

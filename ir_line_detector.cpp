@@ -4,21 +4,24 @@
 
 #include "ir_line_detector.h"
 #include <wiringPi.h>
+#include <iostream>
 
 IRLineDetector::IRLineDetector(){
     init();
 }
 
 void IRLineDetector::init() {
-    pinMode(IR_Line_LEFT, INPUT);
-    pinMode(IR_Line_RIGHT, INPUT);
+    pinMode(IR_LINE_LEFT, INPUT);
+    pinMode(IR_LINE_RIGHT, INPUT);
 }
 
 bool IRLineDetector::left_detected() {
-    return !static_cast<bool>(digitalRead(IR_LINE_LEFT));
+//    std::cout << "LEFT LINE:" << digitalRead(IR_LINE_LEFT) << std::endl;
+    return static_cast<bool>(digitalRead(IR_LINE_LEFT));
 }
 
 bool IRLineDetector::right_detected() {
-    return !static_cast<bool>(digitalRead(IR_LINE_RIGHTT));
+//    std::cout << "RIGHT LINE:" << digitalRead(IR_LINE_RIGHT) << std::endl;
+    return static_cast<bool>(digitalRead(IR_LINE_RIGHT));
 }
 
