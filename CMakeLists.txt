@@ -16,7 +16,7 @@ add_executable(lane_detector lane_detector/lane_detector.cpp)
 add_library(controller controller.cpp)
 add_library(ir_wall ir_wall_detector.cpp)
 add_library(ir_line ir_line_detector.cpp)
-add_library(binarization_utils lane_detector/binarization_utils.cpp)
+add_library(binarization_utils lane_detector/binarization_utils.cpp color_masking.cpp)
 add_library(bird_eye lane_detector/bird_eye.cpp)
 add_library(line_utils lane_detector/line_utils.cpp)
 
