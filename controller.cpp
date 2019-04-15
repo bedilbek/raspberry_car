@@ -75,6 +75,14 @@ void Controller::go_forward_for_5() {
     delay(5000);
 }
 
+void Controller::forward(int left, int right)
+{
+	softPwmWrite(IN1_PIN, left);
+	softPwmWrite(IN2_PIN, MIN_SPEED);
+	softPwmWrite(IN3_PIN, right);
+	softPwmWrite(IN4_PIN, MIN_SPEED);
+}
+
 void Controller::forward(int speed) {
     softPwmWrite(IN1_PIN, speed);
     softPwmWrite(IN2_PIN, MIN_SPEED);

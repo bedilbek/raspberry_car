@@ -1,80 +1,4 @@
-#include <deque>
-#include <vector>
-#include <opencv2/opencv.hpp>
 
-using namespace cv;
-using namespace std;
-
-class Line
-{
-public:
-	bool detected;
-
-	vector<double> last_fit_pixel;
-	vector<double> last_fit_meter;
-	double radius_of_curvature;
-
-	vector<int> all_x;
-	vector<int> all_y;
-
-	vector<vector<double>> recent_fits_pixel;
-	vector<vector<double>> recent_fits_meter;
-
-	Line(int buff_len = 10)
-	{
-		this->detected = false;
-	}
-
-
-	/**
-    Update Line with new fitted coefficients.
-          :param new_fit_pixel: new polynomial coefficients (pixel)
-          :param new_fit_meter: new polynomial coefficients (meter)
-          :param detected: if the Line was detected or inferred
-          :param clear_buffer: if True, reset state
-          :return: None*/
-	void update_line(vector<double> new_fit_pixel, vector<double> new_fit_meter, bool detected, bool clear_buffer = false)
-	{
-		this->detected = detected;
-
-		if (clear_buffer)
-		{
-			this->recent_fits_meter.clear();
-			this->recent_fits_pixel.clear();
-		}
-
-		this->last_fit_meter = new_fit_meter;
-		this->last_fit_pixel = new_fit_pixel;
-
-		this->recent_fits_meter.push_back(new_fit_meter);
-		this->recent_fits_pixel.push_back(new_fit_pixel);
-	}
-
-	vector<double> average_fit()
-	{
-		vector<double> sum;
-		reduce(this->recent_fits_pixel, sum, 0, CV_REDUCE_AVG);
-		return sum;
-	}
-
-
-	double curvature()
-	{
-		float y_eval = 0;
-		vector<double> coeffs = this->average_fit();
-		double result = pow((1 + pow((2 * coeffs[0] * y_eval + coeffs[2]), 2)), 1.5) / abs(2 * coeffs[0]);
-		return result;
-	}
-
-	double curvature_meter()
-	{
-		float y_eval = 0;
-		vector<double> coeffs;
-		reduce(this->recent_fits_meter, coeffs, 0, CV_REDUCE_AVG);
-		double result = pow((1 + pow((2 * coeffs[0] * y_eval + coeffs[2]), 2)), 1.5) / abs(2 * coeffs[0]);
-		return result;
-	}
-};
 
 /*
 	Get polynomial coefficients for lane-lines detected in an binary image.
@@ -86,13 +10,147 @@ public:
 	:param verbose: if True, display intermediate output
 	:return: updated lane lines and output image
 */
-void get_fits_by_sliding_windows(Mat birdeye_binary, Line line_lt, Line line_rt, int n_windows = 9, bool verbose = false)
-{
-	int height = birdeye_binary.cols;
-	int width = birdeye_binary.rows;
 
+void get_fits_by_sliding_windows(Mat birdeye_binary, Line line_lt, Line line_rt, int n_windows, bool verbose)
+{
+	float ym_per_pix = 30 / 720;
+	float xm_per_pix = 3.7 / 700;
+
+	int time_window = 10;
+
+	int height = birdeye_binary.rows;
+	int width = birdeye_binary.cols;
+	Mat bottom_half = birdeye_binary(Range(0, height / 2), Range::all());
 	Mat histogram;
-	reduce(birdeye_binary, histogram, 0, CV_REDUCE_SUM);
+	reduce(bottom_half, histogram, 0, CV_REDUCE_SUM, CV_32SC1);
+
+	int midpoint = histogram.rows / 2;
+	double lmin_val, lmax_val;
+	Point lmin_loc, lmax_loc;
+	minMaxLoc(histogram(Range(0, midpoint), Range::all()), &lmin_val, &lmax_val, &lmin_loc, &lmax_loc);
+	int leftx_base = lmax_loc.x;
+
+	double rmin_val, rmax_val;
+	Point rmin_loc, rmax_loc;
+	minMaxLoc(histogram(Range(midpoint, histogram.rows - 1), Range::all()), &rmin_val, &rmax_val, &rmin_loc, &rmax_loc);
+	int rightx_base = rmax_loc.x + midpoint;
+
+	int window_height = height / n_windows;
+
+	vector<Point> nonzero;
+	findNonZero(birdeye_binary, nonzero);
+
+	int leftx_current = leftx_base;
+	int rightx_current = rightx_base;
+
+	int margin = 100;
+	int minpix = 50;
+
+	vector<int> left_lane_inds;
+	vector<int> right_lane_inds;
+
+	int win_y_low;
+	int win_y_high;
+	int win_xleft_low;
+	int win_xleft_high;
+	int win_xright_low;
+	int win_xright_high;
+	int sum = 0;
+	vector<int> good_left_inds;
+	vector<int> good_right_inds;
+
+	for (int window = 0; window < n_windows; window++)
+	{
+		win_y_low = height - (window + 1) * window_height;
+		win_y_high = height - window * window_height;
+		win_xleft_low = leftx_current - margin;
+		win_xleft_high = leftx_current + margin;
+		win_xright_low = rightx_current - margin;
+		win_xright_high = rightx_current + margin;
+
+		for (int i = 0; i < nonzero.size(); i++)
+		{
+			if ((nonzero[i].y >= win_y_low) & (nonzero[i].y < win_y_high) & (nonzero[i].x >= win_xleft_low)
+				& (nonzero[i].x < win_xleft_high))
+			{
+				good_left_inds.push_back(i);
+			}
+
+			if ((nonzero[i].y >= win_y_low) & (nonzero[i].y < win_y_high) & (nonzero[i].x >= win_xright_low)
+				& (nonzero[i].x < win_xright_high))
+			{
+				good_right_inds.push_back(i);
+			}
+		}
+
+		left_lane_inds.insert(left_lane_inds.begin(), good_left_inds.begin(), good_left_inds.end());
+		right_lane_inds.insert(right_lane_inds.begin(), good_right_inds.begin(), good_right_inds.end());
+
+		sum = 0;
+		if (good_left_inds.size() > minpix)
+		{
+			for (int i = 0; i < good_left_inds.size(); i++)
+				sum += nonzero[i].x;
+			leftx_current = sum / good_left_inds.size();
+		}
+
+		sum = 0;
+		if (good_right_inds.size() > minpix)
+		{
+			for (int i = 0; i < good_right_inds.size(); i++)
+				sum += nonzero[i].x;
+			rightx_current = sum / good_right_inds.size();
+		}
+	}
+
+	for (int i = 0; i < left_lane_inds.size(); i++)
+	{
+		line_lt.all_x.push_back(nonzero[left_lane_inds[i]].x);
+		line_lt.all_y.push_back(nonzero[left_lane_inds[i]].y);
+	}
+
+	for (int i = 0; i < right_lane_inds.size(); i++)
+	{
+		line_rt.all_x.push_back(nonzero[right_lane_inds[i]].x);
+		line_rt.all_y.push_back(nonzero[right_lane_inds[i]].y);
+	}
+
+	bool detected = true;
+	vector<double> left_fit_pixel, right_fit_pixel;
+	vector<double> left_fit_meter, right_fit_meter;
+	if (!line_lt.all_x.empty() || !line_lt.all_y.empty())
+	{
+		left_fit_pixel = line_lt.last_fit_pixel;
+		left_fit_meter = line_lt.last_fit_meter;
+		detected = false;
+	}
+	else
+	{
+		left_fit_pixel = poly_fit(line_lt.all_x, line_lt.all_y, 2);
+		vector<float> all_x_pix, all_y_pix;
+		transform(line_lt.all_x.begin(), line_lt.all_x.end(), all_x_pix.begin(), [xm_per_pix](float x) { return x * xm_per_pix; });
+		transform(line_lt.all_y.begin(), line_lt.all_y.end(), all_y_pix.begin(), [ym_per_pix](float y) { return y * ym_per_pix; });
+		left_fit_meter = poly_fit(all_x_pix, all_y_pix, 2);
+	}
+
+	if (!line_rt.all_x.empty() || !line_rt.all_y.empty())
+	{
+		right_fit_pixel = line_rt.last_fit_pixel;
+		right_fit_meter = line_rt.last_fit_meter;
+		detected = false;
+	}
+	else
+	{
+		right_fit_pixel = poly_fit(line_rt.all_x, line_rt.all_y, 2);
+		vector<float> all_x_pix, all_y_pix;
+		transform(line_rt.all_x.begin(), line_rt.all_x.end(), all_x_pix.begin(), [xm_per_pix](float x) { return x * xm_per_pix; });
+		transform(line_rt.all_y.begin(), line_rt.all_y.end(), all_y_pix.begin(), [ym_per_pix](float y) { return y * ym_per_pix; });
+		right_fit_meter = poly_fit(all_x_pix, all_y_pix, 2);
+	}
+
+	line_lt.update_line(left_fit_pixel, left_fit_meter, detected);
+	line_rt.update_line(right_fit_pixel, right_fit_meter, detected);
+	cout << "" << endl;
 }
 
 
