@@ -1,6 +1,7 @@
 #include <deque>
 #include <vector>
 #include <opencv2/opencv.hpp>
+
 using namespace cv;
 using namespace std;
 
@@ -9,34 +10,30 @@ class Line
 public:
 	bool detected;
 
-	Mat last_fit_pixel;
-	Mat last_fit_meter;
-	float radius_of_curvature;
+	vector<double> last_fit_pixel;
+	vector<double> last_fit_meter;
+	double radius_of_curvature;
 
-	int all_x;
-	int all_y;
+	vector<int> all_x;
+	vector<int> all_y;
 
-	vector<Mat> recent_fits_pixel;
-	vector<Mat> recent_fits_meter;
+	vector<vector<double>> recent_fits_pixel;
+	vector<vector<double>> recent_fits_meter;
 
 	Line(int buff_len = 10)
 	{
 		this->detected = false;
-		this->last_fit_meter = NULL;
-		this->last_fit_pixel = NULL;
-		this->all_x = NULL;
-		this->all_y = NULL;
 	}
 
 
 	/**
-	Update Line with new fitted coefficients.
-        :param new_fit_pixel: new polynomial coefficients (pixel)
-        :param new_fit_meter: new polynomial coefficients (meter)
-        :param detected: if the Line was detected or inferred
-        :param clear_buffer: if True, reset state
-        :return: None*/
-	void update_line(Mat new_fit_pixel, Mat new_fit_meter, bool detected, bool clear_buffer = false)
+    Update Line with new fitted coefficients.
+          :param new_fit_pixel: new polynomial coefficients (pixel)
+          :param new_fit_meter: new polynomial coefficients (meter)
+          :param detected: if the Line was detected or inferred
+          :param clear_buffer: if True, reset state
+          :return: None*/
+	void update_line(vector<double> new_fit_pixel, vector<double> new_fit_meter, bool detected, bool clear_buffer = false)
 	{
 		this->detected = detected;
 
@@ -53,32 +50,31 @@ public:
 		this->recent_fits_pixel.push_back(new_fit_pixel);
 	}
 
-	Mat average_fit()
+	vector<double> average_fit()
 	{
-		Mat sum;
+		vector<double> sum;
 		reduce(this->recent_fits_pixel, sum, 0, CV_REDUCE_AVG);
 		return sum;
 	}
 
 
-	float curvature()
+	double curvature()
 	{
 		float y_eval = 0;
-		Mat coeffs = this->average_fit();
-		double result = pow((1 + pow((2 * coeffs.at<double>(0) * y_eval + coeffs.at<double>(2)), 2)), 1.5) / abs(2 * coeffs.at<double>(0));
+		vector<double> coeffs = this->average_fit();
+		double result = pow((1 + pow((2 * coeffs[0] * y_eval + coeffs[2]), 2)), 1.5) / abs(2 * coeffs[0]);
 		return result;
 	}
 
-	float curvature_meter()
+	double curvature_meter()
 	{
 		float y_eval = 0;
-		Mat coeffs;
+		vector<double> coeffs;
 		reduce(this->recent_fits_meter, coeffs, 0, CV_REDUCE_AVG);
-		double result = pow((1 + pow((2 * coeffs.at<double>(0) * y_eval + coeffs.at<double>(2)), 2)), 1.5) / abs(2 * coeffs.at<double>(0));
+		double result = pow((1 + pow((2 * coeffs[0] * y_eval + coeffs[2]), 2)), 1.5) / abs(2 * coeffs[0]);
 		return result;
 	}
 };
-
 
 /*
 	Get polynomial coefficients for lane-lines detected in an binary image.
@@ -106,18 +102,76 @@ void get_fits_by_previous_fits(Mat birdeye_binary, Line line_lt, Line line_rt, b
 	int width = birdeye_binary.rows;
 
 
-	Mat left_last = line_lt.last_fit_pixel;
-	Mat right_last = line_rt.last_fit_pixel;
+	vector<double> left_last = line_lt.last_fit_pixel;
+	vector<double> right_last = line_rt.last_fit_pixel;
 
 	vector<Point> bird_eye_nonzero;
 	findNonZero(birdeye_binary, bird_eye_nonzero);
 
-	vector<int> left_lane_indcs, right_lane_indcs;
+	int margin = 100;
+	vector<bool> left_lane_indexes, right_lane_indexes;
 
-//	for(auto it=bird_eye_nonzero.begin(); it !=bird_eye_nonzero.end(); it++)
-//	{
-//		left_lane_indcs.insert(it, it > (left_last.at<double>(0))
-//	}
+	for(int i=0; i< bird_eye_nonzero.size(); i++)
+	{
+		left_lane_indexes.push_back(
+				(bird_eye_nonzero[i].x > (left_last[0] * pow(bird_eye_nonzero[i].y, 2) + left_last[1] * bird_eye_nonzero[i].y + left_last[2] - margin))
+				&
+				(bird_eye_nonzero[i].x < (left_last[0] * pow(bird_eye_nonzero[i].y, 2) + left_last[1] * bird_eye_nonzero[i].y + left_last[2] + margin))
+				);
+
+		right_lane_indexes.push_back(
+				(bird_eye_nonzero[i].x > (right_last[0] * pow(bird_eye_nonzero[i].y, 2) + right_last[1] * bird_eye_nonzero[i].y + right_last[2] - margin))
+				&
+				(bird_eye_nonzero[i].x < (right_last[0] * pow(bird_eye_nonzero[i].y, 2) + right_last[1] * bird_eye_nonzero[i].y + right_last[2] + margin))
+				);
+	}
+
+	line_lt.all_y.clear();
+	line_lt.all_x.clear();
+	for (int j = 0; j < left_lane_indexes.size(); ++j) {
+		if (left_lane_indexes[j]) {
+			line_lt.all_x.push_back(bird_eye_nonzero[j].x);
+			line_lt.all_y.push_back(bird_eye_nonzero[j].y);
+		}
+	}
+
+	line_rt.all_y.clear();
+	line_rt.all_x.clear();
+	for (int j = 0; j < right_lane_indexes.size(); ++j) {
+		if (right_lane_indexes[j]) {
+			line_rt.all_x.push_back(bird_eye_nonzero[j].x);
+			line_rt.all_y.push_back(bird_eye_nonzero[j].y);
+		}
+	}
+
+	bool detected = true;
+	vector<double> left_fit_pixel, left_fit_meter, right_fit_pixel, right_fit_meter;
+
+	if (!line_lt.all_y.empty() or !line_lt.all_x.empty())
+	{
+		left_fit_pixel = line_lt.last_fit_pixel;
+		left_fit_meter = line_lt.last_fit_meter;
+		detected = false;
+	} else
+	{
+
+//		left_fit_pixel = polyFit(line_lt.all_y, line_lt.all_x, 2)
+//		left_fit_meter = polyFit(line_lt.all_y * ym_per_pix, line_lt.all_x * xm_per_pix, 2)
+	}
+
+	if (!line_rt.all_y.empty() or !line_rt.all_x.empty())
+	{
+		right_fit_pixel = line_rt.last_fit_pixel;
+		right_fit_meter = line_rt.last_fit_meter;
+		detected = false;
+	} else
+	{
+//		right_fit_pixel = polyFit(line_rt.all_y, line_rt.all_x, 2)
+//		right_fit_meter = polyFit(line_rt.all_y * ym_per_pix, line_rt.all_x * xm_per_pix, 2)
+	}
+
+
+
 }
 
 
