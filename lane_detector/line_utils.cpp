@@ -1,3 +1,4 @@
+#include "line_utils.h"
 
 #include "line_utils.h"
 
@@ -52,7 +53,7 @@ void get_fits_by_sliding_windows(Mat birdeye_binary, Line line_lt, Line line_rt,
 {
 	float ym_per_pix = 30 / 720;
 	float xm_per_pix = 3.7 / 700;
-
+	
 	int time_window = 10;
 
 	int height = birdeye_binary.rows;
@@ -73,7 +74,7 @@ void get_fits_by_sliding_windows(Mat birdeye_binary, Line line_lt, Line line_rt,
 	int rightx_base = rmax_loc.x + midpoint;
 
 	int window_height = height / n_windows;
-
+	
 	vector<Point> nonzero;
 	findNonZero(birdeye_binary, nonzero);
 
@@ -127,7 +128,7 @@ void get_fits_by_sliding_windows(Mat birdeye_binary, Line line_lt, Line line_rt,
 		if (good_left_inds.size() > minpix)
 		{
 			for (int i = 0; i < good_left_inds.size(); i++)
-				sum += nonzero[i].x;
+				sum += nonzero[good_left_inds[i]].x;
 			leftx_current = sum / good_left_inds.size();
 		}
 
@@ -135,7 +136,7 @@ void get_fits_by_sliding_windows(Mat birdeye_binary, Line line_lt, Line line_rt,
 		if (good_right_inds.size() > minpix)
 		{
 			for (int i = 0; i < good_right_inds.size(); i++)
-				sum += nonzero[i].x;
+				sum += nonzero[good_right_inds[i]].x;
 			rightx_current = sum / good_right_inds.size();
 		}
 	}
@@ -155,7 +156,7 @@ void get_fits_by_sliding_windows(Mat birdeye_binary, Line line_lt, Line line_rt,
 	bool detected = true;
 	vector<double> left_fit_pixel, right_fit_pixel;
 	vector<double> left_fit_meter, right_fit_meter;
-	if (!line_lt.all_x.empty() || !line_lt.all_y.empty())
+	if (line_lt.all_x.empty() || line_lt.all_y.empty())
 	{
 		left_fit_pixel = line_lt.last_fit_pixel;
 		left_fit_meter = line_lt.last_fit_meter;
@@ -165,12 +166,17 @@ void get_fits_by_sliding_windows(Mat birdeye_binary, Line line_lt, Line line_rt,
 	{
 		left_fit_pixel = poly_fit(line_lt.all_x, line_lt.all_y, 2);
 		vector<float> all_x_pix, all_y_pix;
+		for (int i = 0; i < line_lt.all_x.size(); i++)
+		{
+			all_x_pix.push_back(0);
+			all_y_pix.push_back(0);
+		}
 		transform(line_lt.all_x.begin(), line_lt.all_x.end(), all_x_pix.begin(), [xm_per_pix](float x) { return x * xm_per_pix; });
 		transform(line_lt.all_y.begin(), line_lt.all_y.end(), all_y_pix.begin(), [ym_per_pix](float y) { return y * ym_per_pix; });
 		left_fit_meter = poly_fit(all_x_pix, all_y_pix, 2);
 	}
 
-	if (!line_rt.all_x.empty() || !line_rt.all_y.empty())
+	if (line_rt.all_x.empty() || line_rt.all_y.empty())
 	{
 		right_fit_pixel = line_rt.last_fit_pixel;
 		right_fit_meter = line_rt.last_fit_meter;
@@ -180,6 +186,11 @@ void get_fits_by_sliding_windows(Mat birdeye_binary, Line line_lt, Line line_rt,
 	{
 		right_fit_pixel = poly_fit(line_rt.all_x, line_rt.all_y, 2);
 		vector<float> all_x_pix, all_y_pix;
+		for (int i = 0; i < line_rt.all_x.size(); i++)
+		{
+			all_x_pix.push_back(0);
+			all_y_pix.push_back(0);
+		}
 		transform(line_rt.all_x.begin(), line_rt.all_x.end(), all_x_pix.begin(), [xm_per_pix](float x) { return x * xm_per_pix; });
 		transform(line_rt.all_y.begin(), line_rt.all_y.end(), all_y_pix.begin(), [ym_per_pix](float y) { return y * ym_per_pix; });
 		right_fit_meter = poly_fit(all_x_pix, all_y_pix, 2);
