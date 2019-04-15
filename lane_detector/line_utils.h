@@ -51,9 +51,9 @@ public:
 	:param verbose: if True, display intermediate output
 	:return: updated lane lines and output image
 */
-void get_fits_by_sliding_windows(Mat birdeye_binary, Line line_lt, Line line_rt, int n_windows = 9, bool verbose = false);
+array<Line, 2> get_fits_by_sliding_windows(Mat birdeye_binary, int n_windows = 9, bool verbose = false);
 
-/**
+/*
 	Compute offset from center of the inferred lane.
 	The offset from the lane center can be computed under the hypothesis that the camera is fixed
 	and mounted in the midpoint of the car roof. In this case, we can approximate the car's deviation

@@ -28,7 +28,13 @@ void Line::update_line(vector<double> new_fit_pixel, vector<double> new_fit_mete
 vector<double> Line::average_fit()
 {
 	vector<double> sum;
-	reduce(this->recent_fits_pixel, sum, 0, CV_REDUCE_AVG);
+	Mat recent_fits = Mat(this->recent_fits_pixel.size(), this->recent_fits_pixel[0].size(), CV_64FC1);
+
+	for (int i = 0; i < this->recent_fits_pixel.size(); i++)
+		for (int j = 0; j < this->recent_fits_pixel[0].size(); j++)
+			recent_fits.at<double>(i, j) = this->recent_fits_pixel[i][j];
+
+	reduce(recent_fits, sum, 0, CV_REDUCE_AVG, CV_64FC1);
 	return sum;
 }
 
@@ -44,18 +50,59 @@ double Line::curvature_meter()
 {
 	float y_eval = 0;
 	vector<double> coeffs;
-	reduce(this->recent_fits_meter, coeffs, 0, CV_REDUCE_AVG);
+
+	Mat recent_fits = Mat(this->recent_fits_meter.size(), this->recent_fits_meter[0].size(), CV_64FC1);
+
+	for (int i = 0; i < this->recent_fits_meter.size(); i++)
+		for (int j = 0; j < this->recent_fits_meter[0].size(); j++)
+			recent_fits.at<double>(i, j) = this->recent_fits_meter[i][j];
+
+	reduce(recent_fits, coeffs, 0, CV_REDUCE_AVG);
 	double result = pow((1 + pow((2 * coeffs[0] * y_eval + coeffs[2]), 2)), 1.5) / abs(2 * coeffs[0]);
 	return result;
 }
 
-void get_fits_by_sliding_windows(Mat birdeye_binary, Line line_lt, Line line_rt, int n_windows, bool verbose)
-{
-	float ym_per_pix = 30 / 720;
-	float xm_per_pix = 3.7 / 700;
-	
-	int time_window = 10;
 
+double compute_offset_from_center(Line line_lt, Line line_rt, int frame_width)
+{
+	if (line_lt.detected && line_rt.detected)
+	{
+		double line_lt_bottom = 0, line_rt_bottom = 0;
+		int count = 0;
+		auto max_y = max_element(begin(line_lt.all_y), end(line_lt.all_y));
+		for (int i = 0; i < line_lt.all_y.size(); i++)
+		{
+			if (line_lt.all_y[i] > max_y[0] * 0.95)
+			{
+				line_lt_bottom += line_lt.all_x[i];
+				count++;
+			}
+		}
+		line_lt_bottom /= count;
+		count = 0;
+
+		for (int i = 0; i < line_rt.all_y.size(); i++)
+		{
+			if (line_rt.all_y[i] > max_y[0] * 0.95)
+			{
+				line_rt_bottom += line_rt.all_x[i];
+				count++;
+			}
+		}
+		line_rt_bottom /= count;
+
+		return xm_per_pix * abs((line_lt_bottom + (line_rt_bottom - line_lt_bottom) / 2) - frame_width / 2);
+	}
+	else
+	{
+		return -1;
+	}
+	return 0;
+}
+
+array<Line, 2> get_fits_by_sliding_windows(Mat birdeye_binary, int n_windows, bool verbose)
+{
+	Line line_lt, line_rt;
 	int height = birdeye_binary.rows;
 	int width = birdeye_binary.cols;
 	Mat bottom_half = birdeye_binary(Range(0, height / 2), Range::all());
@@ -74,7 +121,7 @@ void get_fits_by_sliding_windows(Mat birdeye_binary, Line line_lt, Line line_rt,
 	int rightx_base = rmax_loc.x + midpoint;
 
 	int window_height = height / n_windows;
-	
+
 	vector<Point> nonzero;
 	findNonZero(birdeye_binary, nonzero);
 
@@ -171,8 +218,8 @@ void get_fits_by_sliding_windows(Mat birdeye_binary, Line line_lt, Line line_rt,
 			all_x_pix.push_back(0);
 			all_y_pix.push_back(0);
 		}
-		transform(line_lt.all_x.begin(), line_lt.all_x.end(), all_x_pix.begin(), [xm_per_pix](float x) { return x * xm_per_pix; });
-		transform(line_lt.all_y.begin(), line_lt.all_y.end(), all_y_pix.begin(), [ym_per_pix](float y) { return y * ym_per_pix; });
+		transform(line_lt.all_x.begin(), line_lt.all_x.end(), all_x_pix.begin(), [](float x) { return x * xm_per_pix; });
+		transform(line_lt.all_y.begin(), line_lt.all_y.end(), all_y_pix.begin(), [](float y) { return y * ym_per_pix; });
 		left_fit_meter = poly_fit(all_x_pix, all_y_pix, 2);
 	}
 
@@ -191,16 +238,15 @@ void get_fits_by_sliding_windows(Mat birdeye_binary, Line line_lt, Line line_rt,
 			all_x_pix.push_back(0);
 			all_y_pix.push_back(0);
 		}
-		transform(line_rt.all_x.begin(), line_rt.all_x.end(), all_x_pix.begin(), [xm_per_pix](float x) { return x * xm_per_pix; });
-		transform(line_rt.all_y.begin(), line_rt.all_y.end(), all_y_pix.begin(), [ym_per_pix](float y) { return y * ym_per_pix; });
+		transform(line_rt.all_x.begin(), line_rt.all_x.end(), all_x_pix.begin(), [](float x) { return x * xm_per_pix; });
+		transform(line_rt.all_y.begin(), line_rt.all_y.end(), all_y_pix.begin(), [](float y) { return y * ym_per_pix; });
 		right_fit_meter = poly_fit(all_x_pix, all_y_pix, 2);
 	}
 
 	line_lt.update_line(left_fit_pixel, left_fit_meter, detected);
 	line_rt.update_line(right_fit_pixel, right_fit_meter, detected);
-	cout << "" << endl;
+	return { line_lt, line_rt };
 }
-
 
 void get_fits_by_previous_fits(Mat birdeye_binary, Line line_lt, Line line_rt, bool verbose)
 {
