@@ -22,11 +22,7 @@ public:
 	vector<vector<double>> recent_fits_pixel;
 	vector<vector<double>> recent_fits_meter;
 
-	Line(int buff_len = 10)
-	{
-		this->detected = false;
-	}
-
+	Line(int buff_len = 10);
 
 	/**
 	Update Line with new fitted coefficients.
@@ -35,51 +31,17 @@ public:
 		:param detected: if the Line was detected or inferred
 		:param clear_buffer: if True, reset state
 		:return: None*/
-	void update_line(vector<double> new_fit_pixel, vector<double> new_fit_meter, bool detected, bool clear_buffer = false)
-	{
+	void update_line(vector<double> new_fit_pixel, vector<double> new_fit_meter, bool detected, bool clear_buffer = false);
 
-		this->detected = detected;
+	vector<double> average_fit();
 
-		if (clear_buffer)
-		{
-			this->recent_fits_meter.clear();
-			this->recent_fits_pixel.clear();
-		}
+	double curvature();
 
-		this->last_fit_meter = new_fit_meter;
-		this->last_fit_pixel = new_fit_pixel;
+	double curvature_meter();
 
-		this->recent_fits_meter.push_back(new_fit_meter);
-		this->recent_fits_pixel.push_back(new_fit_pixel);
-	}
-
-	vector<double> average_fit()
-	{
-		vector<double> sum;
-		reduce(this->recent_fits_pixel, sum, 0, CV_REDUCE_AVG);
-		return sum;
-	}
-
-
-	double curvature()
-	{
-		float y_eval = 0;
-		vector<double> coeffs = this->average_fit();
-		double result = pow((1 + pow((2 * coeffs[0] * y_eval + coeffs[2]), 2)), 1.5) / abs(2 * coeffs[0]);
-		return result;
-	}
-
-	double curvature_meter()
-	{
-		float y_eval = 0;
-		vector<double> coeffs;
-		reduce(this->recent_fits_meter, coeffs, 0, CV_REDUCE_AVG);
-		double result = pow((1 + pow((2 * coeffs[0] * y_eval + coeffs[2]), 2)), 1.5) / abs(2 * coeffs[0]);
-		return result;
-	}
 };
 
-/*
+/**
 	Get polynomial coefficients for lane-lines detected in an binary image.
 
 	:param birdeye_binary: input bird's eye view binary image
@@ -91,7 +53,7 @@ public:
 */
 void get_fits_by_sliding_windows(Mat birdeye_binary, Line line_lt, Line line_rt, int n_windows = 9, bool verbose = false);
 
-/*
+/**
 	Compute offset from center of the inferred lane.
 	The offset from the lane center can be computed under the hypothesis that the camera is fixed
 	and mounted in the midpoint of the car roof. In this case, we can approximate the car's deviation
@@ -103,5 +65,8 @@ void get_fits_by_sliding_windows(Mat birdeye_binary, Line line_lt, Line line_rt,
 	:param frame_width: width of the undistorted frame
 	:return: inferred offset
 */
-//double compute_offset_from_center(Line line_lt, Line line_rt, int frame_width);
+double compute_offset_from_center(Line line_lt, Line line_rt, int frame_width);
+
+void get_fits_by_previous_fits(Mat birdeye_binary, Line line_lt, Line line_rt, bool verbose = false);
+
 #endif

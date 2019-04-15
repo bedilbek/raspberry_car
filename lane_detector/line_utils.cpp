@@ -1,15 +1,52 @@
 
+#include "line_utils.h"
 
-/*
-	Get polynomial coefficients for lane-lines detected in an binary image.
+Line::Line(int buff_len)
+{
+	this->detected = false;
+}
 
-	:param birdeye_binary: input bird's eye view binary image
-	:param line_lt: left lane-line previously detected
-	:param line_rt: left lane-line previously detected
-	:param n_windows: number of sliding windows used to search for the lines
-	:param verbose: if True, display intermediate output
-	:return: updated lane lines and output image
-*/
+void Line::update_line(vector<double> new_fit_pixel, vector<double> new_fit_meter, bool detected, bool clear_buffer)
+{
+
+	this->detected = detected;
+
+	if (clear_buffer)
+	{
+		this->recent_fits_meter.clear();
+		this->recent_fits_pixel.clear();
+	}
+
+	this->last_fit_meter = new_fit_meter;
+	this->last_fit_pixel = new_fit_pixel;
+
+	this->recent_fits_meter.push_back(new_fit_meter);
+	this->recent_fits_pixel.push_back(new_fit_pixel);
+}
+
+vector<double> Line::average_fit()
+{
+	vector<double> sum;
+	reduce(this->recent_fits_pixel, sum, 0, CV_REDUCE_AVG);
+	return sum;
+}
+
+double Line::curvature()
+{
+	float y_eval = 0;
+	vector<double> coeffs = this->average_fit();
+	double result = pow((1 + pow((2 * coeffs[0] * y_eval + coeffs[2]), 2)), 1.5) / abs(2 * coeffs[0]);
+	return result;
+}
+
+double Line::curvature_meter()
+{
+	float y_eval = 0;
+	vector<double> coeffs;
+	reduce(this->recent_fits_meter, coeffs, 0, CV_REDUCE_AVG);
+	double result = pow((1 + pow((2 * coeffs[0] * y_eval + coeffs[2]), 2)), 1.5) / abs(2 * coeffs[0]);
+	return result;
+}
 
 void get_fits_by_sliding_windows(Mat birdeye_binary, Line line_lt, Line line_rt, int n_windows, bool verbose)
 {
@@ -154,7 +191,7 @@ void get_fits_by_sliding_windows(Mat birdeye_binary, Line line_lt, Line line_rt,
 }
 
 
-void get_fits_by_previous_fits(Mat birdeye_binary, Line line_lt, Line line_rt, bool verbose = false)
+void get_fits_by_previous_fits(Mat birdeye_binary, Line line_lt, Line line_rt, bool verbose)
 {
 	int height = birdeye_binary.cols;
 	int width = birdeye_binary.rows;
