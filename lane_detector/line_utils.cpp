@@ -100,33 +100,26 @@ double compute_offset_from_center(Line line_lt, Line line_rt, int frame_width)
 	return 0;
 }
 
+
 array<Line, 2> get_fits_by_sliding_windows(Mat birdeye_binary, int n_windows, bool verbose)
 {
 	Line line_lt, line_rt;
 	int height = birdeye_binary.rows;
 	int width = birdeye_binary.cols;
 	Mat bottom_half = birdeye_binary(Range(0, height / 2), Range::all());
-	Mat histogram;
+	vector<int> histogram;
 	reduce(bottom_half, histogram, 0, CV_REDUCE_SUM, CV_32SC1);
 
-	int midpoint = histogram.rows / 2;
+	int midpoint = histogram.size() / 2;
 	double lmin_val, lmax_val;
-	Point lmin_loc, lmax_loc;
-	minMaxLoc(histogram(Range(0, midpoint), Range::all()), &lmin_val, &lmax_val, &lmin_loc, &lmax_loc);
-	int leftx_base = lmax_loc.x;
-
-	double rmin_val, rmax_val;
-	Point rmin_loc, rmax_loc;
-	minMaxLoc(histogram(Range(midpoint, histogram.rows - 1), Range::all()), &rmin_val, &rmax_val, &rmin_loc, &rmax_loc);
-	int rightx_base = rmax_loc.x + midpoint;
 
 	int window_height = height / n_windows;
-
+	
 	vector<Point> nonzero;
 	findNonZero(birdeye_binary, nonzero);
 
-	int leftx_current = leftx_base;
-	int rightx_current = rightx_base;
+	int leftx_current = distance(histogram.begin(), max_element(histogram.begin(), histogram.begin() + midpoint));
+	int rightx_current = distance(histogram.begin(), max_element(histogram.begin() + midpoint, histogram.end()));
 
 	int margin = 100;
 	int minpix = 50;
@@ -143,7 +136,7 @@ array<Line, 2> get_fits_by_sliding_windows(Mat birdeye_binary, int n_windows, bo
 	int sum = 0;
 	vector<int> good_left_inds;
 	vector<int> good_right_inds;
-
+	int count = 0;
 	for (int window = 0; window < n_windows; window++)
 	{
 		win_y_low = height - (window + 1) * window_height;
@@ -155,21 +148,20 @@ array<Line, 2> get_fits_by_sliding_windows(Mat birdeye_binary, int n_windows, bo
 
 		for (int i = 0; i < nonzero.size(); i++)
 		{
-			if ((nonzero[i].y >= win_y_low) & (nonzero[i].y < win_y_high) & (nonzero[i].x >= win_xleft_low)
-				& (nonzero[i].x < win_xleft_high))
+			if ((nonzero[i].y >= win_y_low) && (nonzero[i].y < win_y_high) && (nonzero[i].x >= win_xleft_low)
+				&& (nonzero[i].x < win_xleft_high))
 			{
 				good_left_inds.push_back(i);
+				left_lane_inds.push_back(i);
 			}
 
-			if ((nonzero[i].y >= win_y_low) & (nonzero[i].y < win_y_high) & (nonzero[i].x >= win_xright_low)
-				& (nonzero[i].x < win_xright_high))
+			if ((nonzero[i].y >= win_y_low) && (nonzero[i].y < win_y_high) && (nonzero[i].x >= win_xright_low)
+				&& (nonzero[i].x < win_xright_high))
 			{
 				good_right_inds.push_back(i);
+				right_lane_inds.push_back(i);
 			}
 		}
-
-		left_lane_inds.insert(left_lane_inds.begin(), good_left_inds.begin(), good_left_inds.end());
-		right_lane_inds.insert(right_lane_inds.begin(), good_right_inds.begin(), good_right_inds.end());
 
 		sum = 0;
 		if (good_left_inds.size() > minpix)
@@ -186,6 +178,9 @@ array<Line, 2> get_fits_by_sliding_windows(Mat birdeye_binary, int n_windows, bo
 				sum += nonzero[good_right_inds[i]].x;
 			rightx_current = sum / good_right_inds.size();
 		}
+
+		good_left_inds.clear();
+		good_right_inds.clear();
 	}
 
 	for (int i = 0; i < left_lane_inds.size(); i++)
