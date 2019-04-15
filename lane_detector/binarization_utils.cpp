@@ -74,8 +74,8 @@ Mat binarize(Mat img, bool verbous = false)
 	yellow_mask = thresh_frame_in_HSV(img, yellow_HSV_th_min, yellow_HSV_th_max, false);
 	bitwise_or(yellow_mask, binary, binary);
 	
-	eq_white_mask = get_binary_from_equalized_grayscale(img);
-	bitwise_or(eq_white_mask, binary, binary);
+//	eq_white_mask = get_binary_from_equalized_grayscale(img);
+//	bitwise_or(eq_white_mask, binary, binary);
 
 	sobel_mask = thresh_frame_sobel(img, 3);
 	bitwise_or(sobel_mask, binary, binary);

@@ -14,10 +14,10 @@ Mat bird_eye(cv::Mat img, cv::Mat forw_mat, cv::Mat backw_mat, bool verbose)
     height = img.rows;
 
     Point2f src[4];
-    src[0] = Point2f(width, height-10);
-    src[1] = Point2f(0, height-10);
-    src[2] = Point2f(546, 460);
-    src[3] = Point2f(732, 460);
+    src[0] = Point2f(width, height-150);
+    src[1] = Point2f(0, height-150);
+    src[2] = Point2f(380, 350);
+    src[3] = Point2f(800, 350);
 
     Point2f dest[4];
     dest[0] = Point2f(width, height);
