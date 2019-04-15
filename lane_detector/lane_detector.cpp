@@ -23,8 +23,7 @@ int main()
 
     array<Line, 2> lines = get_fits_by_sliding_windows(img_bird);
 
-    cout << lines[0].curvature() << endl;
-    get_fits_by_previous_fits(img_bird, lines[0], lines[1], false);
+    double offset = compute_offset_from_center(lines[0], lines[1], 1280);
 
 	return 0;
 }

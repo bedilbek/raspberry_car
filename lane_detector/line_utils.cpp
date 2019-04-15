@@ -1,6 +1,8 @@
 
 #include "line_utils.h"
-//push test
+#include "globals.h"
+
+
 Line::Line(int buff_len)
 {
 	this->detected = false;
@@ -64,8 +66,6 @@ double Line::curvature_meter()
 
 double compute_offset_from_center(Line line_lt, Line line_rt, int frame_width)
 {
-	float ym_per_pix = 30 / 720;
-	float xm_per_pix = 3.7 / 700;
 
 	int time_window = 10;
 	if (line_lt.detected && line_rt.detected)
@@ -255,8 +255,6 @@ array<Line, 2> get_fits_by_sliding_windows(Mat birdeye_binary, int n_windows, bo
 
 void get_fits_by_previous_fits(Mat birdeye_binary, Line line_lt, Line line_rt, bool verbose)
 {
-    float ym_per_pix = 30 / 720;
-    float xm_per_pix = 3.7 / 700;
 
     int height = birdeye_binary.cols;
 	int width = birdeye_binary.rows;
@@ -323,8 +321,8 @@ void get_fits_by_previous_fits(Mat birdeye_binary, Line line_lt, Line line_rt, b
             all_x_pix.push_back(0);
             all_y_pix.push_back(0);
         }
-        transform(line_lt.all_x.begin(), line_lt.all_x.end(), all_x_pix.begin(), [xm_per_pix](float x) { return x * xm_per_pix; });
-        transform(line_lt.all_y.begin(), line_lt.all_y.end(), all_y_pix.begin(), [ym_per_pix](float y) { return y * ym_per_pix; });
+        transform(line_lt.all_x.begin(), line_lt.all_x.end(), all_x_pix.begin(), [](float x) { return x * xm_per_pix; });
+        transform(line_lt.all_y.begin(), line_lt.all_y.end(), all_y_pix.begin(), [](float y) { return y * ym_per_pix; });
         left_fit_meter = poly_fit(all_x_pix, all_y_pix, 2);
 	}
 
@@ -343,8 +341,8 @@ void get_fits_by_previous_fits(Mat birdeye_binary, Line line_lt, Line line_rt, b
             all_x_pix.push_back(0);
             all_y_pix.push_back(0);
         }
-        transform(line_rt.all_x.begin(), line_rt.all_x.end(), all_x_pix.begin(), [xm_per_pix](float x) { return x * xm_per_pix; });
-        transform(line_rt.all_y.begin(), line_rt.all_y.end(), all_y_pix.begin(), [ym_per_pix](float y) { return y * ym_per_pix; });
+        transform(line_rt.all_x.begin(), line_rt.all_x.end(), all_x_pix.begin(), [](float x) { return x * xm_per_pix; });
+        transform(line_rt.all_y.begin(), line_rt.all_y.end(), all_y_pix.begin(), [](float y) { return y * ym_per_pix; });
         right_fit_meter = poly_fit(all_x_pix, all_y_pix, 2);
 	}
 
