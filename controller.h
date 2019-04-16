@@ -16,6 +16,8 @@ public:
 
     void forward(int speed);
 
+	void forward(int left, int right);
+
     void left(int speed);
 
     void turn(int left,int right);
