@@ -13,7 +13,7 @@ Mat bird_eye(cv::Mat img, cv::Mat forw_mat, cv::Mat backw_mat, bool verbose)
 	float w_out = 200;
 	float bhratio = 0.853;
 	float thratio = 0.208;
-	float wtratio = 0.135;
+	float wtratio = 0.130;
 	float wbratio = 1 - wtratio;
 	float ratio = 1.02;
 
