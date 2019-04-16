@@ -350,6 +350,33 @@ main.cpp.s:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+steering.o: steering.cpp.o
+
+.PHONY : steering.o
+
+# target to build an object file
+steering.cpp.o:
+	$(MAKE) -f CMakeFiles/camera.dir/build.make CMakeFiles/camera.dir/steering.cpp.o
+.PHONY : steering.cpp.o
+
+steering.i: steering.cpp.i
+
+.PHONY : steering.i
+
+# target to preprocess a source file
+steering.cpp.i:
+	$(MAKE) -f CMakeFiles/camera.dir/build.make CMakeFiles/camera.dir/steering.cpp.i
+.PHONY : steering.cpp.i
+
+steering.s: steering.cpp.s
+
+.PHONY : steering.s
+
+# target to generate assembly for a file
+steering.cpp.s:
+	$(MAKE) -f CMakeFiles/camera.dir/build.make CMakeFiles/camera.dir/steering.cpp.s
+.PHONY : steering.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -382,6 +409,9 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... steering.o"
+	@echo "... steering.i"
+	@echo "... steering.s"
 .PHONY : help
 
 

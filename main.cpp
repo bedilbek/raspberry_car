@@ -17,27 +17,25 @@ using namespace std;
 int main() {
     if (wiringPiSetup() == -1)
         return 0;
-
-    IRWallDetector ir_wall_detect;
-    IRLineDetector ir_line_detect;
-
-    while (1) {
-
-        if (ir_wall_detect.left_detected()) {
-            std::cout << "Left Obstacle" << std::endl;
-        }
-
-        if (ir_wall_detect.right_detected()) {
-            std::cout << "Right Obstacle" << std::endl;
-        }
-
-        if (ir_line_detect.right_detected()) {
-            std::cout << "Right Line" << std::endl;
-        }
-
-        if (ir_line_detect.left_detected()) {
-            std::cout << "Left Line" << std::endl;
-        }
+    Controller controller;
+    int steering = -50;
+    controller.init_dc_motor();
+    controller.forward(80);
+    delay(1000);
+    if (steering > 0) {
+        int left = 100 - (steering / 100) * 100;
+        int right = 100;
+        controller.turn(left, right);
+    } else {
+        steering = -steering;
+        int right = 100 - (steering / 100) * 100;
+        int left = 100;
+        controller.turn(left, right);
     }
+    delay(1000);
+    controller.forward(80);
+    delay(1000);
+    controller.stop();
     return 0;
 }
+

@@ -341,6 +341,12 @@
 		<Unit filename="/tmp/tmp.yE1kzQPFFA/main.cpp">
 			<Option target="main"/>
 		</Unit>
+		<Unit filename="/tmp/tmp.yE1kzQPFFA/steering.cpp">
+			<Option target="camera"/>
+		</Unit>
+		<Unit filename="/tmp/tmp.yE1kzQPFFA/steering.h">
+			<Option target="camera"/>
+		</Unit>
 		<Unit filename="/tmp/tmp.yE1kzQPFFA/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>

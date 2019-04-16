@@ -3,7 +3,7 @@ project(smart_car)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(camera camera.cpp)
+add_executable(camera camera.cpp steering.h steering.cpp)
 add_executable(joystick joystick.cpp)
 add_executable(main main.cpp)
 

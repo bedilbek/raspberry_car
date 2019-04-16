@@ -13,7 +13,6 @@ int main() {
 
 
     Controller controller;
-    controller.set_pin_mode();
     controller.init_dc_motor();
 
     while (true) {

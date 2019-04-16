@@ -18,6 +18,8 @@ public:
 
     void left(int speed);
 
+    void turn(int left,int right);
+
     void right(int speed);
 
     void stop();
@@ -35,6 +37,7 @@ public:
     void go_backward_for_2_right_smooth_stop();
 
     void right_smooth(int speed);
+
 
 
 };
