@@ -34,3 +34,13 @@ target_link_libraries(main wiringPi crypt pthread rt m ir_wall ir_line)
 link_directories(/usr/local/lib)
 target_link_libraries(lane_detector binarization_utils bird_eye line_utils poly_regres ${OpenCV_LIBS})
 target_link_libraries(camera raspicam_cv ${OpenCV_LIBS})
+
+
+set (source "${CMAKE_SOURCE_DIR}/files")
+set (destination "${CMAKE_CURRENT_BINARY_DIR}/files")
+add_custom_command(
+        TARGET main POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E create_symlink ${source} ${destination}
+        DEPENDS ${destination}
+        COMMENT "symbolic link resources folder from ${source} => ${destination}"
+)

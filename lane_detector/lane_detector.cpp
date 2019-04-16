@@ -1,5 +1,6 @@
 #include "binarization_utils.h"
 #include "bird_eye.h"
+#include "line_utils.h"
 #include <opencv2/opencv.hpp>
 #include <cmath>
 #include <iostream>
@@ -10,6 +11,19 @@ using namespace std;
 
 int main()
 {
+    Mat img = imread("files/testing_road1.png", IMREAD_COLOR);
+
+    Mat img_resized;
+    resize(img, img_resized, Size(1280, 720));
+
+    Mat img_bin = binarize(img_resized, false);
+    Mat forw, back;
+
+    Mat img_bird = bird_eye(img_bin, forw, back, false);
+
+    array<Line, 2> lines = get_fits_by_sliding_windows(img_bird);
+
+    double offset = compute_offset_from_center(lines[0], lines[1], 1280);
 
 	return 0;
 }
