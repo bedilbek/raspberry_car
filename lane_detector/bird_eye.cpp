@@ -10,18 +10,26 @@ Mat bird_eye(cv::Mat img, cv::Mat forw_mat, cv::Mat backw_mat, bool verbose)
 {
     int width, height;
 
+	float w_out = 200;
+	float bhratio = 0.853;
+	float thratio = 0.208;
+	float wtratio = 0.135;
+	float wbratio = 1 - wtratio;
+	float ratio = 1.02;
+
     width = img.cols;
     height = img.rows;
-
+	width += w_out;
     Point2f src[4];
-    src[0] = Point2f(width, height-10);
-    src[1] = Point2f(0, height-10);
-    src[2] = Point2f(546, 460);
-    src[3] = Point2f(732, 460);
+    src[0] = Point2f(width - w_out / 2, height * bhratio);
+    src[1] = Point2f(w_out / (-2), height * bhratio);
+    src[2] = Point2f((width - w_out) * wtratio, height * thratio);
+    src[3] = Point2f((width - w_out) * wbratio, height * thratio);
 
+	
     Point2f dest[4];
-    dest[0] = Point2f(width, height);
-    dest[1] = Point2f(0, height);
+    dest[0] = Point2f(width, width * ratio);
+    dest[1] = Point2f(0, width * ratio);
     dest[2] = Point2f(0, 0);
     dest[3] = Point2f(width, 0);
 
@@ -30,7 +38,7 @@ Mat bird_eye(cv::Mat img, cv::Mat forw_mat, cv::Mat backw_mat, bool verbose)
 
     Mat warped_img;
 
-    warpPerspective(img, warped_img, forw_mat, Size(width, height), INTER_LINEAR);
+    warpPerspective(img, warped_img, forw_mat, Size(width, width * ratio), INTER_LINEAR);
 
     if (verbose)
     {
