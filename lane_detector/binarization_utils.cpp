@@ -2,8 +2,8 @@
 
 using namespace cv;
 
-Scalar yellow_HSV_th_min = { 20, 150, 40 };
-Scalar yellow_HSV_th_max = { 45, 255, 255 };
+Scalar yellow_HSV_th_min = { 50, 230, 230 };
+Scalar yellow_HSV_th_max = { 58, 255, 255 };
 
 //Threshold a color frame in HSV space
 Mat thresh_frame_in_HSV(Mat3b frame, Scalar min_values, Scalar max_values, bool verbous = false)

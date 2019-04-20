@@ -51,3 +51,5 @@ lane_detector/LaneDetector\.vcxproj\.user
 lane_detector/x64/Debug/
 
 lane_detector/x64/Release/
+
+lab/
