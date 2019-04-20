@@ -5,9 +5,6 @@
 #ifndef SMART_CAR_CONTROLLER_H
 #define SMART_CAR_CONTROLLER_H
 
-
-
-
 class Controller {
 
 public:
@@ -15,8 +12,6 @@ public:
     void init_dc_motor();
 
     void forward(int speed);
-
-	void forward(int left, int right);
 
     void left(int speed);
 
@@ -40,10 +35,6 @@ public:
 
     void right_smooth(int speed);
 
-
-
 };
-
-
 
 #endif //SMART_CAR_CONTROLLER_H

@@ -17,24 +17,24 @@ using namespace std;
 int main() {
     if (wiringPiSetup() == -1)
         return 0;
+
     Controller controller;
-    int steering = -50;
     controller.init_dc_motor();
-    controller.forward(80);
-    delay(1000);
-    if (steering > 0) {
-        int left = 100 - (steering / 100) * 100;
-        int right = 100;
-        controller.turn(left, right);
-    } else {
-        steering = -steering;
-        int right = 100 - (steering / 100) * 100;
-        int left = 100;
-        controller.turn(left, right);
+
+    while (true) {
+        int steering;
+        cin >> steering;
+        if (steering > 0) {
+            float x = 100.0 - (steering / 100.0) * 100.0;
+            cout<<"x:"<<x<<endl;
+            controller.turn(x, 100);
+        } else {
+            steering = -steering;
+            float y = 100.0 - (steering / 100.0) * 100.0;
+            cout<<"y:"<<y<<endl;
+            controller.turn(100, y);
+        }
     }
-    delay(1000);
-    controller.forward(80);
-    delay(1000);
     controller.stop();
     return 0;
 }

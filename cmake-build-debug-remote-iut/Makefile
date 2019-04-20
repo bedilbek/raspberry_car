@@ -111,56 +111,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named ir_wall
+# Target rules for targets named lane_detector
 
 # Build rule for target.
-ir_wall: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 ir_wall
-.PHONY : ir_wall
+lane_detector: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 lane_detector
+.PHONY : lane_detector
 
 # fast build rule for target.
-ir_wall/fast:
-	$(MAKE) -f CMakeFiles/ir_wall.dir/build.make CMakeFiles/ir_wall.dir/build
-.PHONY : ir_wall/fast
-
-#=============================================================================
-# Target rules for targets named camera
-
-# Build rule for target.
-camera: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 camera
-.PHONY : camera
-
-# fast build rule for target.
-camera/fast:
-	$(MAKE) -f CMakeFiles/camera.dir/build.make CMakeFiles/camera.dir/build
-.PHONY : camera/fast
-
-#=============================================================================
-# Target rules for targets named main
-
-# Build rule for target.
-main: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 main
-.PHONY : main
-
-# fast build rule for target.
-main/fast:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
-.PHONY : main/fast
-
-#=============================================================================
-# Target rules for targets named ir_line
-
-# Build rule for target.
-ir_line: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 ir_line
-.PHONY : ir_line
-
-# fast build rule for target.
-ir_line/fast:
-	$(MAKE) -f CMakeFiles/ir_line.dir/build.make CMakeFiles/ir_line.dir/build
-.PHONY : ir_line/fast
+lane_detector/fast:
+	$(MAKE) -f CMakeFiles/lane_detector.dir/build.make CMakeFiles/lane_detector.dir/build
+.PHONY : lane_detector/fast
 
 #=============================================================================
 # Target rules for targets named joystick
@@ -176,6 +137,32 @@ joystick/fast:
 .PHONY : joystick/fast
 
 #=============================================================================
+# Target rules for targets named main
+
+# Build rule for target.
+main: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 main
+.PHONY : main
+
+# fast build rule for target.
+main/fast:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
+.PHONY : main/fast
+
+#=============================================================================
+# Target rules for targets named camera
+
+# Build rule for target.
+camera: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 camera
+.PHONY : camera
+
+# fast build rule for target.
+camera/fast:
+	$(MAKE) -f CMakeFiles/camera.dir/build.make CMakeFiles/camera.dir/build
+.PHONY : camera/fast
+
+#=============================================================================
 # Target rules for targets named controller
 
 # Build rule for target.
@@ -187,6 +174,84 @@ controller: cmake_check_build_system
 controller/fast:
 	$(MAKE) -f CMakeFiles/controller.dir/build.make CMakeFiles/controller.dir/build
 .PHONY : controller/fast
+
+#=============================================================================
+# Target rules for targets named ir_wall
+
+# Build rule for target.
+ir_wall: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 ir_wall
+.PHONY : ir_wall
+
+# fast build rule for target.
+ir_wall/fast:
+	$(MAKE) -f CMakeFiles/ir_wall.dir/build.make CMakeFiles/ir_wall.dir/build
+.PHONY : ir_wall/fast
+
+#=============================================================================
+# Target rules for targets named binarization_utils
+
+# Build rule for target.
+binarization_utils: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 binarization_utils
+.PHONY : binarization_utils
+
+# fast build rule for target.
+binarization_utils/fast:
+	$(MAKE) -f CMakeFiles/binarization_utils.dir/build.make CMakeFiles/binarization_utils.dir/build
+.PHONY : binarization_utils/fast
+
+#=============================================================================
+# Target rules for targets named ir_line
+
+# Build rule for target.
+ir_line: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 ir_line
+.PHONY : ir_line
+
+# fast build rule for target.
+ir_line/fast:
+	$(MAKE) -f CMakeFiles/ir_line.dir/build.make CMakeFiles/ir_line.dir/build
+.PHONY : ir_line/fast
+
+#=============================================================================
+# Target rules for targets named bird_eye
+
+# Build rule for target.
+bird_eye: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 bird_eye
+.PHONY : bird_eye
+
+# fast build rule for target.
+bird_eye/fast:
+	$(MAKE) -f CMakeFiles/bird_eye.dir/build.make CMakeFiles/bird_eye.dir/build
+.PHONY : bird_eye/fast
+
+#=============================================================================
+# Target rules for targets named poly_regres
+
+# Build rule for target.
+poly_regres: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 poly_regres
+.PHONY : poly_regres
+
+# fast build rule for target.
+poly_regres/fast:
+	$(MAKE) -f CMakeFiles/poly_regres.dir/build.make CMakeFiles/poly_regres.dir/build
+.PHONY : poly_regres/fast
+
+#=============================================================================
+# Target rules for targets named line_utils
+
+# Build rule for target.
+line_utils: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 line_utils
+.PHONY : line_utils
+
+# fast build rule for target.
+line_utils/fast:
+	$(MAKE) -f CMakeFiles/line_utils.dir/build.make CMakeFiles/line_utils.dir/build
+.PHONY : line_utils/fast
 
 camera.o: camera.cpp.o
 
@@ -215,12 +280,40 @@ camera.cpp.s:
 	$(MAKE) -f CMakeFiles/camera.dir/build.make CMakeFiles/camera.dir/camera.cpp.s
 .PHONY : camera.cpp.s
 
+color_masking.o: color_masking.cpp.o
+
+.PHONY : color_masking.o
+
+# target to build an object file
+color_masking.cpp.o:
+	$(MAKE) -f CMakeFiles/binarization_utils.dir/build.make CMakeFiles/binarization_utils.dir/color_masking.cpp.o
+.PHONY : color_masking.cpp.o
+
+color_masking.i: color_masking.cpp.i
+
+.PHONY : color_masking.i
+
+# target to preprocess a source file
+color_masking.cpp.i:
+	$(MAKE) -f CMakeFiles/binarization_utils.dir/build.make CMakeFiles/binarization_utils.dir/color_masking.cpp.i
+.PHONY : color_masking.cpp.i
+
+color_masking.s: color_masking.cpp.s
+
+.PHONY : color_masking.s
+
+# target to generate assembly for a file
+color_masking.cpp.s:
+	$(MAKE) -f CMakeFiles/binarization_utils.dir/build.make CMakeFiles/binarization_utils.dir/color_masking.cpp.s
+.PHONY : color_masking.cpp.s
+
 controller.o: controller.cpp.o
 
 .PHONY : controller.o
 
 # target to build an object file
 controller.cpp.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/controller.cpp.o
 	$(MAKE) -f CMakeFiles/controller.dir/build.make CMakeFiles/controller.dir/controller.cpp.o
 .PHONY : controller.cpp.o
 
@@ -230,6 +323,7 @@ controller.i: controller.cpp.i
 
 # target to preprocess a source file
 controller.cpp.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/controller.cpp.i
 	$(MAKE) -f CMakeFiles/controller.dir/build.make CMakeFiles/controller.dir/controller.cpp.i
 .PHONY : controller.cpp.i
 
@@ -239,6 +333,7 @@ controller.s: controller.cpp.s
 
 # target to generate assembly for a file
 controller.cpp.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/controller.cpp.s
 	$(MAKE) -f CMakeFiles/controller.dir/build.make CMakeFiles/controller.dir/controller.cpp.s
 .PHONY : controller.cpp.s
 
@@ -323,6 +418,141 @@ joystick.cpp.s:
 	$(MAKE) -f CMakeFiles/joystick.dir/build.make CMakeFiles/joystick.dir/joystick.cpp.s
 .PHONY : joystick.cpp.s
 
+lane_detector/binarization_utils.o: lane_detector/binarization_utils.cpp.o
+
+.PHONY : lane_detector/binarization_utils.o
+
+# target to build an object file
+lane_detector/binarization_utils.cpp.o:
+	$(MAKE) -f CMakeFiles/binarization_utils.dir/build.make CMakeFiles/binarization_utils.dir/lane_detector/binarization_utils.cpp.o
+.PHONY : lane_detector/binarization_utils.cpp.o
+
+lane_detector/binarization_utils.i: lane_detector/binarization_utils.cpp.i
+
+.PHONY : lane_detector/binarization_utils.i
+
+# target to preprocess a source file
+lane_detector/binarization_utils.cpp.i:
+	$(MAKE) -f CMakeFiles/binarization_utils.dir/build.make CMakeFiles/binarization_utils.dir/lane_detector/binarization_utils.cpp.i
+.PHONY : lane_detector/binarization_utils.cpp.i
+
+lane_detector/binarization_utils.s: lane_detector/binarization_utils.cpp.s
+
+.PHONY : lane_detector/binarization_utils.s
+
+# target to generate assembly for a file
+lane_detector/binarization_utils.cpp.s:
+	$(MAKE) -f CMakeFiles/binarization_utils.dir/build.make CMakeFiles/binarization_utils.dir/lane_detector/binarization_utils.cpp.s
+.PHONY : lane_detector/binarization_utils.cpp.s
+
+lane_detector/bird_eye.o: lane_detector/bird_eye.cpp.o
+
+.PHONY : lane_detector/bird_eye.o
+
+# target to build an object file
+lane_detector/bird_eye.cpp.o:
+	$(MAKE) -f CMakeFiles/bird_eye.dir/build.make CMakeFiles/bird_eye.dir/lane_detector/bird_eye.cpp.o
+.PHONY : lane_detector/bird_eye.cpp.o
+
+lane_detector/bird_eye.i: lane_detector/bird_eye.cpp.i
+
+.PHONY : lane_detector/bird_eye.i
+
+# target to preprocess a source file
+lane_detector/bird_eye.cpp.i:
+	$(MAKE) -f CMakeFiles/bird_eye.dir/build.make CMakeFiles/bird_eye.dir/lane_detector/bird_eye.cpp.i
+.PHONY : lane_detector/bird_eye.cpp.i
+
+lane_detector/bird_eye.s: lane_detector/bird_eye.cpp.s
+
+.PHONY : lane_detector/bird_eye.s
+
+# target to generate assembly for a file
+lane_detector/bird_eye.cpp.s:
+	$(MAKE) -f CMakeFiles/bird_eye.dir/build.make CMakeFiles/bird_eye.dir/lane_detector/bird_eye.cpp.s
+.PHONY : lane_detector/bird_eye.cpp.s
+
+lane_detector/lane_detector.o: lane_detector/lane_detector.cpp.o
+
+.PHONY : lane_detector/lane_detector.o
+
+# target to build an object file
+lane_detector/lane_detector.cpp.o:
+	$(MAKE) -f CMakeFiles/lane_detector.dir/build.make CMakeFiles/lane_detector.dir/lane_detector/lane_detector.cpp.o
+.PHONY : lane_detector/lane_detector.cpp.o
+
+lane_detector/lane_detector.i: lane_detector/lane_detector.cpp.i
+
+.PHONY : lane_detector/lane_detector.i
+
+# target to preprocess a source file
+lane_detector/lane_detector.cpp.i:
+	$(MAKE) -f CMakeFiles/lane_detector.dir/build.make CMakeFiles/lane_detector.dir/lane_detector/lane_detector.cpp.i
+.PHONY : lane_detector/lane_detector.cpp.i
+
+lane_detector/lane_detector.s: lane_detector/lane_detector.cpp.s
+
+.PHONY : lane_detector/lane_detector.s
+
+# target to generate assembly for a file
+lane_detector/lane_detector.cpp.s:
+	$(MAKE) -f CMakeFiles/lane_detector.dir/build.make CMakeFiles/lane_detector.dir/lane_detector/lane_detector.cpp.s
+.PHONY : lane_detector/lane_detector.cpp.s
+
+lane_detector/line_utils.o: lane_detector/line_utils.cpp.o
+
+.PHONY : lane_detector/line_utils.o
+
+# target to build an object file
+lane_detector/line_utils.cpp.o:
+	$(MAKE) -f CMakeFiles/line_utils.dir/build.make CMakeFiles/line_utils.dir/lane_detector/line_utils.cpp.o
+.PHONY : lane_detector/line_utils.cpp.o
+
+lane_detector/line_utils.i: lane_detector/line_utils.cpp.i
+
+.PHONY : lane_detector/line_utils.i
+
+# target to preprocess a source file
+lane_detector/line_utils.cpp.i:
+	$(MAKE) -f CMakeFiles/line_utils.dir/build.make CMakeFiles/line_utils.dir/lane_detector/line_utils.cpp.i
+.PHONY : lane_detector/line_utils.cpp.i
+
+lane_detector/line_utils.s: lane_detector/line_utils.cpp.s
+
+.PHONY : lane_detector/line_utils.s
+
+# target to generate assembly for a file
+lane_detector/line_utils.cpp.s:
+	$(MAKE) -f CMakeFiles/line_utils.dir/build.make CMakeFiles/line_utils.dir/lane_detector/line_utils.cpp.s
+.PHONY : lane_detector/line_utils.cpp.s
+
+lane_detector/poly_fit.o: lane_detector/poly_fit.cpp.o
+
+.PHONY : lane_detector/poly_fit.o
+
+# target to build an object file
+lane_detector/poly_fit.cpp.o:
+	$(MAKE) -f CMakeFiles/poly_regres.dir/build.make CMakeFiles/poly_regres.dir/lane_detector/poly_fit.cpp.o
+.PHONY : lane_detector/poly_fit.cpp.o
+
+lane_detector/poly_fit.i: lane_detector/poly_fit.cpp.i
+
+.PHONY : lane_detector/poly_fit.i
+
+# target to preprocess a source file
+lane_detector/poly_fit.cpp.i:
+	$(MAKE) -f CMakeFiles/poly_regres.dir/build.make CMakeFiles/poly_regres.dir/lane_detector/poly_fit.cpp.i
+.PHONY : lane_detector/poly_fit.cpp.i
+
+lane_detector/poly_fit.s: lane_detector/poly_fit.cpp.s
+
+.PHONY : lane_detector/poly_fit.s
+
+# target to generate assembly for a file
+lane_detector/poly_fit.cpp.s:
+	$(MAKE) -f CMakeFiles/poly_regres.dir/build.make CMakeFiles/poly_regres.dir/lane_detector/poly_fit.cpp.s
+.PHONY : lane_detector/poly_fit.cpp.s
+
 main.o: main.cpp.o
 
 .PHONY : main.o
@@ -385,15 +615,23 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... ir_wall"
-	@echo "... camera"
-	@echo "... main"
-	@echo "... ir_line"
+	@echo "... lane_detector"
 	@echo "... joystick"
+	@echo "... main"
+	@echo "... camera"
 	@echo "... controller"
+	@echo "... ir_wall"
+	@echo "... binarization_utils"
+	@echo "... ir_line"
+	@echo "... bird_eye"
+	@echo "... poly_regres"
+	@echo "... line_utils"
 	@echo "... camera.o"
 	@echo "... camera.i"
 	@echo "... camera.s"
+	@echo "... color_masking.o"
+	@echo "... color_masking.i"
+	@echo "... color_masking.s"
 	@echo "... controller.o"
 	@echo "... controller.i"
 	@echo "... controller.s"
@@ -406,6 +644,21 @@ help:
 	@echo "... joystick.o"
 	@echo "... joystick.i"
 	@echo "... joystick.s"
+	@echo "... lane_detector/binarization_utils.o"
+	@echo "... lane_detector/binarization_utils.i"
+	@echo "... lane_detector/binarization_utils.s"
+	@echo "... lane_detector/bird_eye.o"
+	@echo "... lane_detector/bird_eye.i"
+	@echo "... lane_detector/bird_eye.s"
+	@echo "... lane_detector/lane_detector.o"
+	@echo "... lane_detector/lane_detector.i"
+	@echo "... lane_detector/lane_detector.s"
+	@echo "... lane_detector/line_utils.o"
+	@echo "... lane_detector/line_utils.i"
+	@echo "... lane_detector/line_utils.s"
+	@echo "... lane_detector/poly_fit.o"
+	@echo "... lane_detector/poly_fit.i"
+	@echo "... lane_detector/poly_fit.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

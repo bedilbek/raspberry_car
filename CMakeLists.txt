@@ -6,11 +6,11 @@ set(CMAKE_CXX_STANDARD 17)
 
 include_directories(lane_detector)
 
-find_package( OpenCV REQUIRED )
+
 
 add_executable(camera camera.cpp steering.h steering.cpp)
 add_executable(joystick joystick.cpp)
-add_executable(main main.cpp)
+add_executable(main main.cpp controller.cpp)
 
 add_executable(lane_detector lane_detector/lane_detector.cpp)
 
