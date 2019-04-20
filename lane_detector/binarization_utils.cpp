@@ -10,7 +10,7 @@ Mat thresh_frame_in_HSV(Mat3b frame, Scalar min_values, Scalar max_values, bool 
 {
 	Mat hsv;
 	cvtColor(frame, hsv, COLOR_BGR2HSV);
-
+	
 	Mat maskHSV, result_hsv;
 	inRange(hsv, min_values, max_values, maskHSV);
 
