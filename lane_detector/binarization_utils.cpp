@@ -2,8 +2,8 @@
 
 using namespace cv;
 
-Scalar yellow_HSV_th_min = { 0, 70, 70 };
-Scalar yellow_HSV_th_max = { 50, 255, 255 };
+Scalar yellow_HSV_th_min = { 20, 150, 40 };
+Scalar yellow_HSV_th_max = { 45, 255, 255 };
 
 //Threshold a color frame in HSV space
 Mat thresh_frame_in_HSV(Mat3b frame, Scalar min_values, Scalar max_values, bool verbous = false)
@@ -13,6 +13,7 @@ Mat thresh_frame_in_HSV(Mat3b frame, Scalar min_values, Scalar max_values, bool 
 
 	Mat maskHSV, result_hsv;
 	inRange(hsv, min_values, max_values, maskHSV);
+
 	//bitwise_and(hsv, hsv, result_hsv, maskHSV);
 
 	if (verbous)
@@ -83,6 +84,9 @@ Mat binarize(Mat img, bool verbous = false)
 	Mat result;
 	Mat kernel = Mat(5, 5, CV_8UC1, Scalar(1));
 	morphologyEx(binary, result, MORPH_CLOSE, kernel);
+
+	//namedWindow("sobel mask", WINDOW_NORMAL);
+	//imshow("sobel mask", sobel_mask);
 
 	if (false)
 	{

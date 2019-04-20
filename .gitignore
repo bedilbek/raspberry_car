@@ -48,10 +48,6 @@ lane_detector/LaneDetector\.vcxproj\.filters
 
 lane_detector/LaneDetector\.vcxproj\.user
 
-lane_detector/pch\.cpp
-
-lane_detector/pch\.h
-
 lane_detector/x64/Debug/
 
 lane_detector/x64/Release/
