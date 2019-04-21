@@ -43,7 +43,7 @@ target_link_libraries(camera raspicam_cv ${OpenCV_LIBS})
 set (source "${CMAKE_SOURCE_DIR}/files")
 set (destination "${CMAKE_CURRENT_BINARY_DIR}/files")
 add_custom_command(
-        TARGET smart_car
+        TARGET main POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E create_symlink ${source} ${destination}
         DEPENDS ${destination}
         COMMENT "symbolic link resources folder from ${source} => ${destination}"
