@@ -28,59 +28,11 @@ void Controller::init_dc_motor() {
     softPwmCreate(IN4_PIN, 0, 100);
 }
 
-void Controller::go_backward_for_2_right_smooth_stop() {
-    backward(80);
-    delay(2000);
-    right_smooth(100);
-    stop();
-}
-
-void Controller::right_smooth(int speed) {
-    softPwmWrite(IN1_PIN, speed + 10);
+void Controller::turn(int left, int right) {
+    softPwmWrite(IN1_PIN, left);
     softPwmWrite(IN2_PIN, MIN_SPEED);
-    softPwmWrite(IN3_PIN, MIN_SPEED);
-    softPwmWrite(IN4_PIN, speed - 10);
-}
-
-
-void Controller::go_forward_for_2_left_point_stop() {
-    forward(80);
-    delay(2000);
-    left(100);
-    delay(900);
-    stop();
-}
-
-
-void Controller::turn_right_go_back_for_3_stop() {
-    right(100);
-    delay(500);
-    stop();
-    backward(80);
-    delay(3000);
-    stop();
-}
-
-void Controller::turn_left_go_forward_for_3_stop() {
-    left(100);
-    delay(500);
-    stop();
-    forward(80);
-    delay(3000);
-    stop();
-}
-
-void Controller::go_forward_for_5() {
-    forward(80);
-    delay(5000);
-}
-
-void Controller::forward(int left, int right)
-{
-	softPwmWrite(IN1_PIN, left);
-	softPwmWrite(IN2_PIN, MIN_SPEED);
-	softPwmWrite(IN3_PIN, right);
-	softPwmWrite(IN4_PIN, MIN_SPEED);
+    softPwmWrite(IN3_PIN, right);
+    softPwmWrite(IN4_PIN, MIN_SPEED);
 }
 
 void Controller::forward(int speed) {
@@ -112,10 +64,10 @@ void Controller::right(int speed) {
 }
 
 void Controller::stop() {
-    softPwmWrite(IN1_PIN, 0);
-    softPwmWrite(IN2_PIN, 0);
-    softPwmWrite(IN3_PIN, 0);
-    softPwmWrite(IN4_PIN, 0);
+    softPwmWrite(IN1_PIN, LOW);
+    softPwmWrite(IN2_PIN, LOW);
+    softPwmWrite(IN3_PIN, LOW);
+    softPwmWrite(IN4_PIN, LOW);
 
     init_dc_motor();
 }

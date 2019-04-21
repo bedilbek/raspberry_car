@@ -6,17 +6,22 @@ set(CMAKE_CXX_STANDARD 17)
 
 include_directories(lane_detector)
 
+add_custom_target(smart_car ALL)
+
 find_package( OpenCV REQUIRED )
 
 add_executable(camera camera.cpp)
 add_executable(joystick joystick.cpp)
 add_executable(main main.cpp)
+add_executable(zebra zebra.cpp)
 
 add_executable(lane_detector lane_detector/lane_detector.cpp)
+add_executable(lane_detector_img lane_detector/lane_detector_img.cpp)
 
 add_library(controller controller.cpp)
 add_library(ir_wall ir_wall_detector.cpp)
 add_library(ir_line ir_line_detector.cpp)
+add_library(cross_walk_detector cross_walk_detector.cpp)
 
 # Lane Detection Libs
 add_library(binarization_utils lane_detector/binarization_utils.cpp color_masking.cpp)
@@ -28,12 +33,14 @@ add_library(poly_regres lane_detector/poly_fit.cpp)
 link_directories(/usr/lib)
 target_link_libraries(camera wiringPi crypt pthread rt m)
 target_link_libraries(joystick wiringPi crypt pthread rt m controller)
-target_link_libraries(main wiringPi crypt pthread rt m ir_wall ir_line)
+target_link_libraries(main wiringPi crypt pthread rt m ir_wall ir_line controller)
 
 # Linking Libs from /usr/local/lib directory
 link_directories(/usr/local/lib)
 target_link_libraries(lane_detector binarization_utils bird_eye line_utils poly_regres ${OpenCV_LIBS})
+target_link_libraries(lane_detector_img binarization_utils bird_eye line_utils poly_regres ${OpenCV_LIBS})
 target_link_libraries(camera raspicam_cv ${OpenCV_LIBS})
+target_link_libraries(cross_walk_detector bird_eye binarization_utils ${OpenCV_LIBS})
 
 
 set (source "${CMAKE_SOURCE_DIR}/files")

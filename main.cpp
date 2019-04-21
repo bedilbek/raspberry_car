@@ -18,26 +18,24 @@ int main() {
     if (wiringPiSetup() == -1)
         return 0;
 
-    IRWallDetector ir_wall_detect;
-    IRLineDetector ir_line_detect;
+    Controller controller;
+    controller.init_dc_motor();
 
-    while (1) {
-
-        if (ir_wall_detect.left_detected()) {
-            std::cout << "Left Obstacle" << std::endl;
-        }
-
-        if (ir_wall_detect.right_detected()) {
-            std::cout << "Right Obstacle" << std::endl;
-        }
-
-        if (ir_line_detect.right_detected()) {
-            std::cout << "Right Line" << std::endl;
-        }
-
-        if (ir_line_detect.left_detected()) {
-            std::cout << "Left Line" << std::endl;
+    while (true) {
+        int steering;
+        cin >> steering;
+        if (steering > 0) {
+            float x = 100.0 - (steering / 100.0) * 100.0;
+            cout<<"x:"<<x<<endl;
+            controller.turn(x, 100);
+        } else {
+            steering = -steering;
+            float y = 100.0 - (steering / 100.0) * 100.0;
+            cout<<"y:"<<y<<endl;
+            controller.turn(100, y);
         }
     }
+    controller.stop();
     return 0;
 }
+

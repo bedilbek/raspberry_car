@@ -46,7 +46,7 @@ Mat bird_eye(cv::Mat img, cv::Mat forw_mat, cv::Mat backw_mat, bool verbose)
 //        f.set_facecolor('white')
 //        axarray[0].set_title('Before perspective transform')
 //        axarray[0].imshow(img, cmap='gray')
-//        for point in src:
+//        for point in canny_src:
 //            axarray[0].plot(*point, '.')
 //        axarray[1].set_title('After perspective transform')
 //        axarray[1].imshow(warped, cmap='gray')
