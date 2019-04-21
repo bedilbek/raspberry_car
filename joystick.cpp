@@ -19,13 +19,13 @@ int main() {
         char command;
         cin >> command;
         if (command == 'a') {
-            controller.left(50);
+            controller.left(80);
         } else if (command == 'w') {
-            controller.forward(50);
+            controller.forward(80);
         } else if (command == 's') {
-            controller.backward(50);
+            controller.backward(80);
         } else if (command == 'd') {
-            controller.right(50);
+            controller.right(80);
         } else {
             break;
         }
