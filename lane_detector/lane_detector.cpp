@@ -1,258 +1,114 @@
-// LaneDetector.cpp : This file contains the 'main' function. Program execution begins and ends there.
+//// LaneDetector.cpp : This file contains the 'main' function. Program execution begins and ends there.
+////
 //
-
-#include "pch.h"
-#include "binarization_utils.h"
-#include "bird_eye.h"
-#include "line_utils.h"
-#include <wiringPi.h>
-#include <opencv2/opencv.hpp>
-#include "globals.h"
-#include <iostream>
-#include <vector>
-#include <raspicam/raspicam_cv.h>
-#include "../controller.h"
-
-using namespace std;
-using namespace cv;
-using namespace raspicam;
-
-int h = 0, s = 0, v = 0;
-int hm = 0, sm = 0, vm = 0;
-int th1 = 1, th2 = 1;
-
-Scalar yellow_th_min = { 160, 40, 180 };
-Scalar yellow_th_max = { 255, 255, 255 };
-
-Scalar first_min = { 18, 150, 150 };
-Scalar first_max = { 38, 255, 255 };
-
-Scalar highlight_min = { 30, 100, 240 };
-Scalar highlight_max = { 38, 255, 255 };
-
-Scalar medium_min = { 30, 240, 100 };
-Scalar medium_max = { 38, 255, 255 }; 
-
-Scalar highlight2_min = { 27, 70, 200 };
-Scalar highlight2_max = { 38, 255, 255 };
-
-Scalar remove1_min = { 0, 0, 200 };
-Scalar remove1_max = { 38, 125, 255 };
-
-
-static void on_min(int, void*)
-{
-	yellow_th_min = Scalar(h, s, v);
-}
-
-static void on_max(int, void*)
-{
-	yellow_th_max = Scalar(hm, sm, vm);
-}
-
-static void on_canny(int, void*)
-{
-
-}
-
-int main()
-{
-    if (wiringPiSetup() == -1)
-        return 0;
-
-//    Mat img = imread("files/first.png");
-//    Mat f, b;
-//    Mat img_bird = bird_eye(img, f, b, false);
-//    imshow("frame", img_bird);
-//    waitKey(0);
-	Controller controller;
-	controller.init_dc_motor();
-
-	RaspiCam_Cv video;
-//    video.set(cv::CAP_PROP_FRAME_WIDTH, 384);
-//    video.set(cv::CAP_PROP_FRAME_HEIGHT, 216);
-//    video.set(cv::CAP_PROP_FPS, 5);
-
-    video.open();
-
-	if (!video.isOpened()) {
-		cout << "Error opening video stream or file" << endl;
-		return -1;
-	}
-	//short kdata[] = {};
-
-	int roi = 20;
-	Point seed;
-	bool playback = true;
-	Mat frame, mask, edge, first, highlight, medium, highligh;
-	Mat r1, f, b;
-	Mat prev, res;
-	int indxl = -1, indxr = -1;
-	int pindxl = -1, pindxr = -1;
-	vector<int> reduced;
-	int seq = 10;
-	int threshold = 50;
-	bool left = true, right = true;
-	int interval = 3;
-	int cframe = 0;
-	int pthreshold = 3;
-	Mat kernel = Mat(5, 5, CV_8UC1, Scalar(1));
-	Point p1, p2;
-
-	while (1)
-	{
-		if (playback)
-		{
-			// Capture frame-by-frame
-			video.grab();
-			video.retrieve(frame);
-			resize(frame, frame, Size(384, 216));
-//            imshow("frame", frame);
-			// If the frame is empty, break immediately
-			if (frame.empty())
-				break;
-		}
-
-		Mat colorMask = Mat(frame.rows, frame.cols, CV_8UC1, Scalar(0));
-		colorMask = thresh_frame_in_LAB(frame, yellow_th_min, yellow_th_max, false);
-
-		colorMask = bird_eye(colorMask, f, b, false);
-		mask = colorMask(Range(colorMask.rows - roi, colorMask.rows), Range::all());
-		reduce(mask, reduced, 0, CV_REDUCE_SUM, CV_32SC1);
-
-		for (int i = 0, j = reduced.size() - 1;
-			i < (reduced.size() / 2)
-			&& j >(reduced.size() / 2); i++, j--)
-		{
-			if ((i < pindxl + threshold && i > pindxl - threshold) || pindxl < 0)
-			{
-				if (reduced[i] > 0 && indxl < 0 && left)
-				{
-					indxl = i;
-				}
-			}
-
-		/// Canny detector
-//		Canny( detected_edges, detected_edges, lowThreshold, lowThreshold*ratio, kernel_size );
-
-			if ((j < pindxr + threshold && j > pindxr - threshold) || pindxr < 0)
-			{
-				if (reduced[j] > 0 && indxr < 0 && right)
-				{
-					indxr = j;
-				}
-			}
-		}
-
-		for (int i = colorMask.rows - 1; i > colorMask.rows - threshold; i--)
-		{
-			for (int j = indxl - threshold / 2, count = 0; j < indxl + threshold / 2 && j < colorMask.cols; j++)
-			{
-				if (j < 0)
-				{
-					j = 0;
-				}
-
-				if (colorMask.at<unsigned char>(i, j) > 0)
-				{
-					count++;
-				}
-				else
-				{
-					count = 0;
-				}
-
-				if (count > seq && colorMask.at<unsigned char>(i, j) != 150)
-				{
-					floodFill(colorMask, Point(j, i), Scalar(150));
-					break;
-				}
-			}
-		}
-
-		for (int i = colorMask.rows - 1; i > colorMask.rows - threshold; i--)
-		{
-			for (int j = indxr - threshold / 2, count = 0; j < indxr + threshold / 2 && j < colorMask.cols; j++)
-			{
-				if (j < 0)
-				{
-					j = 0;
-				}
-
-				if (colorMask.at<unsigned char>(i, j) > 0)
-				{
-					count++;
-				}
-				else
-				{
-					count = 0;
-				}
-
-				if (count > seq && colorMask.at<unsigned char>(i, j) != 150)
-				{
-					floodFill(colorMask, Point(j, i), Scalar(150));
-					break;
-				}
-			}
-		}
-
-		inRange(colorMask, Scalar(149), Scalar(151), colorMask);
-		erode(colorMask, colorMask, kernel);
-		Canny(colorMask, colorMask, 80, 200);
-//		imshow("img", colorMask);
-
-		pindxl = indxl;
-		pindxr = indxr;
-		indxl = -1;
-		indxr = -1;
-
-		for (int i = 0; i < colorMask.cols; i++)
-		{
-			if (colorMask.at<unsigned char>(colorMask.rows - 80, i) > 0)
-			{
-				p1 = Point(i, colorMask.rows - 80);
-				break;
-			}
-		}
-
-		for (int i = 0; i < colorMask.cols; i++)
-		{
-			if (colorMask.at<unsigned char>(colorMask.rows - 50, i) > 0)
-			{
-				p2 = Point(i, colorMask.rows - 50);
-				break;
-			}
-		}
-		double steering;
-		steering = ((p2.y - p1.y) != 0) ? atan(((double)(p1.x - p2.x)) / ((double)(p2.y - p1.y))) * 300.0 / 3.14 : 0;
-        steering *= -1;
-//		if ((p2.y - p1.y) != 0)
-//			cout << atan(((double)(p1.x - p2.x)) / ((double)(p2.y - p1.y))) * 280.0 / 3.14 << endl;
-//		else
-//			cout << 0 << endl;
-
-		if (steering > 0) {
-//			cout<<"x:"<<x<<endl;
-			controller.turn(100.0 - steering, 100);
-		} else {
-			steering = -steering;
-//			cout<<"y:"<<y<<endl;
-			controller.turn(100, 100.0 - steering);
-		}
-
+//#include "pch.h"
+//#include "binarization_utils.h"
+//#include "bird_eye.h"
+//#include "line_utils.h"
+//#include <opencv2/opencv.hpp>
+//#include <iostream>
+//#include <vector>
+//
+//using namespace std;
+//using namespace cv;
+//
+//int main()
+//{
+//	VideoCapture cap("test.mp4");
+//
+//	if (!cap.isOpened()) {
+//		cout << "Error opening video stream or file" << endl;
+//		return -1;
+//	}
+//	bool playback = true;
+//	while (1) 
+//	{
+//		if (playback)
+//		{
+//			Mat frame;
+//			// Capture frame-by-frame
+//			cap >> frame;
+//
+//			// If the frame is empty, break immediately
+//			if (frame.empty())
+//				break;
+//
+//			Mat binarized = binarize(frame, true);
+//			Mat forward, backward;
+//			Mat birdeye = bird_eye(binarized, forward, backward, false);
+//			Mat birdeye_org = bird_eye(frame, forward, backward, false);
+//
+//			//auto lines = get_fits_by_sliding_windows(birdeye);
+//			//double offset = compute_offset_from_center(lines[0], lines[1], frame.cols);
+//
+//			resize(birdeye, birdeye, Size(birdeye.cols / 2, birdeye.rows / 2));
+//			//resize(birdeye_org, birdeye_org, Size(birdeye.cols / 2, birdeye.rows / 2));
+//			imshow("Bin", birdeye);
+//			imshow("Org", birdeye_org);
+//
+//
+//			// Display the resulting frame
+//			//imshow("Frame", frame);
+//		}
 //		// Press  ESC on keyboard to exit
 //		char c = (char)waitKey(25);
 //		if (c == 27)
 //			break;
 //		if (c == 'p')
 //			playback = !playback;
+//	}
+//
+//	// When everything done, release the video capture object
+//	cap.release();
+//
+//	// Closes all the frames
+//	destroyAllWindows();
+//
+//	return 0;
+//}
+
+// Modify the program such that: 
+// 1. It takes raspicam input frames instead of imread
+// 2. When red traffic signs are identified, then the motors should act accordingly (for that use the motor control functions such as goForward(), goRight(), stop(), goLeft() etc.)
+
+#include "opencv2/opencv.hpp" 
+#include <iostream>  
+#include <string> 
+
+using namespace cv;
+using namespace std;
+int main()
+{
+	Mat bgr_image = imread("../files/testing_road1.png", IMREAD_COLOR);
+	Mat hsv_image;
+	cvtColor(bgr_image, hsv_image, cv::COLOR_BGR2HSV);
+	// Threshold the HSV image, keep only the red pixels
+	Mat lower_red_hue_range;
+	Mat upper_red_hue_range;
+	inRange(hsv_image, cv::Scalar(0, 100, 100), cv::Scalar(10, 255, 255), lower_red_hue_range);
+	inRange(hsv_image, cv::Scalar(160, 100, 100), cv::Scalar(179, 255, 255), upper_red_hue_range);
+	// Threshold the HSV image, keep only the blue pixels
+	Mat blue_hue_range;
+	inRange(hsv_image, cv::Scalar(80, 65, 65, 0), cv::Scalar(140, 255, 255, 0), blue_hue_range);
+	imshow("Original", bgr_image);
+	waitKey(0);
+	// Use the Hough transform to detect circles in the threshold image
+	vector<cv::Vec3f> circles;
+	HoughCircles(lower_red_hue_range, circles, CV_HOUGH_GRADIENT, 1, lower_red_hue_range.rows / 8, 100, 20, 0, 0);
+	HoughCircles(blue_hue_range, circles, CV_HOUGH_GRADIENT, 1, blue_hue_range.rows / 8, 100, 20, 0, 0);
+	// Loop over all detected circles and outline them on the original image
+	if (circles.size() == 0) std::exit(-1);
+	for (size_t current_circle = 0; current_circle < circles.size(); ++current_circle) {
+		Point center(std::round(circles[current_circle][0]), std::round(circles[current_circle][1]));
+		int radius = std::round(circles[current_circle][2]);
+
+		circle(bgr_image, center, radius, cv::Scalar(0, 255, 0), 5);
 	}
+	Mat inv_lower_red_hue_range = Scalar::all(255) - lower_red_hue_range;
+	Mat inv_blue_hue_range = Scalar::all(255) - blue_hue_range;
+	imshow("Reds", inv_lower_red_hue_range);
+	imshow("Blues", inv_blue_hue_range);
 
-	// When everything done, release the video capture object
-	video.release();
-
-	// Closes all the frames
-	destroyAllWindows();
-
+	waitKey(0);
 	return 0;
 }
