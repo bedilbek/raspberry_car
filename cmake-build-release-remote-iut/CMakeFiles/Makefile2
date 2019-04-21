@@ -70,8 +70,8 @@ CMAKE_BINARY_DIR = /tmp/tmp.yE1kzQPFFA/cmake-build-release-remote-iut
 # All Build rule for target.
 CMakeFiles/lane_detector.dir/all: CMakeFiles/poly_regres.dir/all
 CMakeFiles/lane_detector.dir/all: CMakeFiles/line_utils.dir/all
-CMakeFiles/lane_detector.dir/all: CMakeFiles/bird_eye.dir/all
 CMakeFiles/lane_detector.dir/all: CMakeFiles/binarization_utils.dir/all
+CMakeFiles/lane_detector.dir/all: CMakeFiles/bird_eye.dir/all
 	$(MAKE) -f CMakeFiles/lane_detector.dir/build.make CMakeFiles/lane_detector.dir/depend
 	$(MAKE) -f CMakeFiles/lane_detector.dir/build.make CMakeFiles/lane_detector.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/tmp/tmp.yE1kzQPFFA/cmake-build-release-remote-iut/CMakeFiles --progress-num=17,18 "Built target lane_detector"
@@ -145,8 +145,8 @@ clean: CMakeFiles/joystick.dir/clean
 # Target rules for target CMakeFiles/main.dir
 
 # All Build rule for target.
-CMakeFiles/main.dir/all: CMakeFiles/ir_line.dir/all
 CMakeFiles/main.dir/all: CMakeFiles/ir_wall.dir/all
+CMakeFiles/main.dir/all: CMakeFiles/ir_line.dir/all
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/depend
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/tmp/tmp.yE1kzQPFFA/cmake-build-release-remote-iut/CMakeFiles --progress-num=21,22,23 "Built target main"
