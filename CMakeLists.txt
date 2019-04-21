@@ -37,7 +37,7 @@ target_link_libraries(main wiringPi crypt pthread rt m ir_wall ir_line controlle
 
 # Linking Libs from /usr/local/lib directory
 link_directories(/usr/local/lib)
-target_link_libraries(lane_detector binarization_utils bird_eye line_utils poly_regres ${OpenCV_LIBS})
+target_link_libraries(lane_detector controller wiringPi raspicam_cv binarization_utils bird_eye line_utils poly_regres ${OpenCV_LIBS})
 target_link_libraries(lane_detector_img binarization_utils bird_eye line_utils poly_regres ${OpenCV_LIBS})
 target_link_libraries(camera raspicam_cv ${OpenCV_LIBS})
 target_link_libraries(cross_walk_detector bird_eye binarization_utils ${OpenCV_LIBS})

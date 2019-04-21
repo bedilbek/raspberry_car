@@ -5,13 +5,17 @@
 #include "binarization_utils.h"
 #include "bird_eye.h"
 #include "line_utils.h"
+#include <wiringPi.h>
 #include <opencv2/opencv.hpp>
 #include "globals.h"
 #include <iostream>
 #include <vector>
+#include <raspicam/raspicam_cv.h>
+#include "../controller.h"
 
 using namespace std;
 using namespace cv;
+using namespace raspicam;
 
 int h = 0, s = 0, v = 0;
 int hm = 0, sm = 0, vm = 0;
@@ -53,9 +57,25 @@ static void on_canny(int, void*)
 
 int main()
 {
-	VideoCapture cap("../files/test.mp4");
+    if (wiringPiSetup() == -1)
+        return 0;
 
-	if (!cap.isOpened()) {
+//    Mat img = imread("files/first.png");
+//    Mat f, b;
+//    Mat img_bird = bird_eye(img, f, b, false);
+//    imshow("frame", img_bird);
+//    waitKey(0);
+	Controller controller;
+	controller.init_dc_motor();
+
+	RaspiCam_Cv video;
+//    video.set(cv::CAP_PROP_FRAME_WIDTH, 384);
+//    video.set(cv::CAP_PROP_FRAME_HEIGHT, 216);
+//    video.set(cv::CAP_PROP_FPS, 5);
+
+    video.open();
+
+	if (!video.isOpened()) {
 		cout << "Error opening video stream or file" << endl;
 		return -1;
 	}
@@ -84,8 +104,10 @@ int main()
 		if (playback)
 		{
 			// Capture frame-by-frame
-			video >> frame;
-
+			video.grab();
+			video.retrieve(frame);
+			resize(frame, frame, Size(384, 216));
+//            imshow("frame", frame);
 			// If the frame is empty, break immediately
 			if (frame.empty())
 				break;
@@ -177,7 +199,7 @@ int main()
 		inRange(colorMask, Scalar(149), Scalar(151), colorMask);
 		erode(colorMask, colorMask, kernel);
 		Canny(colorMask, colorMask, 80, 200);
-		imshow("img", colorMask);
+//		imshow("img", colorMask);
 
 		pindxl = indxl;
 		pindxr = indxr;
@@ -201,18 +223,29 @@ int main()
 				break;
 			}
 		}
+		double steering;
+		steering = ((p2.y - p1.y) != 0) ? atan(((double)(p1.x - p2.x)) / ((double)(p2.y - p1.y))) * 300.0 / 3.14 : 0;
+        steering *= -1;
+//		if ((p2.y - p1.y) != 0)
+//			cout << atan(((double)(p1.x - p2.x)) / ((double)(p2.y - p1.y))) * 280.0 / 3.14 << endl;
+//		else
+//			cout << 0 << endl;
 
-		if ((p2.y - p1.y) != 0)
-			cout << atan(((double)(p1.x - p2.x)) / ((double)(p2.y - p1.y))) * 280.0 / 3.14 << endl;
-		else
-			cout << 0 << endl;
+		if (steering > 0) {
+//			cout<<"x:"<<x<<endl;
+			controller.turn(100.0 - steering, 100);
+		} else {
+			steering = -steering;
+//			cout<<"y:"<<y<<endl;
+			controller.turn(100, 100.0 - steering);
+		}
 
-		// Press  ESC on keyboard to exit
-		char c = (char)waitKey(25);
-		if (c == 27)
-			break;
-		if (c == 'p')
-			playback = !playback;
+//		// Press  ESC on keyboard to exit
+//		char c = (char)waitKey(25);
+//		if (c == 27)
+//			break;
+//		if (c == 'p')
+//			playback = !playback;
 	}
 
 	// When everything done, release the video capture object
