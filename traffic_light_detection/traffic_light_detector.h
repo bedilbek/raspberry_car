@@ -1,0 +1,11 @@
+//
+// Created by Shakhobiddin on 4/14/2019.
+//
+
+#ifndef SMART_CAR_TRAFFIC_LIGHT_DETECTOR_H
+#define SMART_CAR_TRAFFIC_LIGHT_DETECTOR_H
+
+
+
+
+#endif //SMART_CAR_TRAFFIC_LIGHT_DETECTOR_H
