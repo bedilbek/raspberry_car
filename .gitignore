@@ -42,3 +42,16 @@
 /cmake-build-release-remote-iut/
 /cmake-build-debug-remote-eth/
 /cmake-build-release-remote-eth/
+lane_detector/LaneDetector\.vcxproj
+
+lane_detector/LaneDetector\.vcxproj\.filters
+
+lane_detector/LaneDetector\.vcxproj\.user
+
+lane_detector/x64/Debug/
+
+lane_detector/x64/Release/
+
+lab/
+
+canny_src/

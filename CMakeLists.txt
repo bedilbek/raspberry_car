@@ -6,13 +6,16 @@ set(CMAKE_CXX_STANDARD 17)
 
 include_directories(lane_detector)
 
+add_custom_target(smart_car ALL)
 
+find_package( OpenCV REQUIRED )
 
-add_executable(camera camera.cpp steering.h steering.cpp)
+add_executable(camera camera.cpp)
 add_executable(joystick joystick.cpp)
-add_executable(main main.cpp controller.cpp)
+add_executable(main main.cpp)
 
 add_executable(lane_detector lane_detector/lane_detector.cpp)
+add_executable(lane_detector_img lane_detector/lane_detector_img.cpp)
 
 add_library(controller controller.cpp)
 add_library(ir_wall ir_wall_detector.cpp)
@@ -33,13 +36,14 @@ target_link_libraries(main wiringPi crypt pthread rt m ir_wall ir_line)
 # Linking Libs from /usr/local/lib directory
 link_directories(/usr/local/lib)
 target_link_libraries(lane_detector binarization_utils bird_eye line_utils poly_regres ${OpenCV_LIBS})
+target_link_libraries(lane_detector_img binarization_utils bird_eye line_utils poly_regres ${OpenCV_LIBS})
 target_link_libraries(camera raspicam_cv ${OpenCV_LIBS})
 
 
 set (source "${CMAKE_SOURCE_DIR}/files")
 set (destination "${CMAKE_CURRENT_BINARY_DIR}/files")
 add_custom_command(
-        TARGET main POST_BUILD
+        TARGET smart_car
         COMMAND ${CMAKE_COMMAND} -E create_symlink ${source} ${destination}
         DEPENDS ${destination}
         COMMENT "symbolic link resources folder from ${source} => ${destination}"
