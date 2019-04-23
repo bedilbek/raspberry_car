@@ -21,20 +21,6 @@ int main() {
     Controller controller;
     controller.init_dc_motor();
 
-    while (true) {
-        int steering;
-        cin >> steering;
-        if (steering > 0) {
-            float x = 100.0 - (steering / 100.0) * 100.0;
-            cout<<"x:"<<x<<endl;
-            controller.turn(x, 100);
-        } else {
-            steering = -steering;
-            float y = 100.0 - (steering / 100.0) * 100.0;
-            cout<<"y:"<<y<<endl;
-            controller.turn(100, y);
-        }
-    }
     controller.stop();
     return 0;
 }

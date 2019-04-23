@@ -9,7 +9,7 @@ using namespace std;
 
 int main() {
     Mat image;
-    image = imread("../files/random3.png", IMREAD_COLOR);
+    image = imread("../files/zebra.png", IMREAD_COLOR);
     if (image.empty()) {
         return 0;
     }
@@ -39,6 +39,7 @@ int main() {
             }
         }
     }
+    waitKey(0);
     return 0;
 }
 
