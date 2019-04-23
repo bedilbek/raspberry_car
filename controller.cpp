@@ -29,35 +29,50 @@ void Controller::init_dc_motor() {
 }
 
 void Controller::turn(int steering,int speed) {
-    if (steering > 0) {
-        float x = 100.0 - steering;
-        softPwmWrite(IN1_PIN, x);
-        softPwmWrite(IN2_PIN, MIN_SPEED);
-        softPwmWrite(IN3_PIN, speed);
-        softPwmWrite(IN4_PIN, MIN_SPEED);
-    } else {
-        steering = -steering;
-        float y = 100.0 - steering;
-        softPwmWrite(IN1_PIN, speed);
-        softPwmWrite(IN2_PIN, MIN_SPEED);
-        softPwmWrite(IN3_PIN, y);
-        softPwmWrite(IN4_PIN, MIN_SPEED);
-    }
+    int left,right;
 
+    if(speed == 0)
+        stop();
+
+    else if(speed>0){
+        //forward
+        if(steering>0){
+            left = speed -steering;
+            right = speed;
+        }else{
+            steering = -steering;
+            left = speed;
+            right = speed - steering;
+        }
+        forward(left,right);
+    } else{
+        //backward
+        speed =-speed;
+        if(steering>0){
+            left = speed -steering;
+            right = speed;
+        }else{
+            steering = -steering;
+            left = speed;
+            right = speed - steering;
+        }
+        backward(left,right);
+    }
 }
 
-void Controller::forward(int speed) {
-    softPwmWrite(IN1_PIN, speed);
+
+void Controller::forward(int left,int right) {
+    softPwmWrite(IN1_PIN, left);
     softPwmWrite(IN2_PIN, MIN_SPEED);
-    softPwmWrite(IN3_PIN, speed);
+    softPwmWrite(IN3_PIN, right);
     softPwmWrite(IN4_PIN, MIN_SPEED);
 }
 
-void Controller::backward(int speed) {
+void Controller::backward(int left,int right) {
     softPwmWrite(IN1_PIN, MIN_SPEED);
-    softPwmWrite(IN2_PIN, speed);
+    softPwmWrite(IN2_PIN, left);
     softPwmWrite(IN3_PIN, MIN_SPEED);
-    softPwmWrite(IN4_PIN, speed);
+    softPwmWrite(IN4_PIN, right);
 }
 
 void Controller::left(int speed) {
