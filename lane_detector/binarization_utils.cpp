@@ -2,8 +2,8 @@
 
 using namespace cv;
 
-Scalar yellow_HSV_th_min = { 20, 150, 90 };
-Scalar yellow_HSV_th_max = { 58, 200, 200 };
+Scalar yellow_HSV_th_min = { 18, 148, 148 };
+Scalar yellow_HSV_th_max = { 37, 255, 255 };
 
 //Threshold a color frame in HSV space
 Mat thresh_frame_in_HSV(Mat3b frame, Scalar min_values, Scalar max_values, bool verbous = false)
@@ -14,13 +14,16 @@ Mat thresh_frame_in_HSV(Mat3b frame, Scalar min_values, Scalar max_values, bool 
 	Mat maskHSV;
 	inRange(hsv, min_values, max_values, maskHSV);
 
-	//bitwise_and(hsv, hsv, result_hsv, maskHSV);
+	return maskHSV;
+}
 
-	if (verbous)
-	{
-		namedWindow("gray", WINDOW_NORMAL);
-		imshow("gray", maskHSV);
-	}
+Mat thresh_frame_in_LAB(Mat3b frame, Scalar min_values, Scalar max_values, bool verbous = false)
+{
+	Mat hsv;
+	cvtColor(frame, hsv, COLOR_BGR2Lab);
+
+	Mat maskHSV, result_hsv;
+	inRange(hsv, min_values, max_values, maskHSV);
 
 	return maskHSV;
 }
@@ -98,13 +101,11 @@ Mat binarize(Mat img, bool verbous = false)
 
 	binary = Mat(img.rows, img.cols, CV_8UC1, Scalar(0));
 	
-//	yellow_mask = thresh_frame_in_HSV(img, yellow_HSV_th_min, yellow_HSV_th_max, false);
-//	bitwise_or(yellow_mask, binary, binary);
-//    namedWindow("yellow", WINDOW_NORMAL);
-//    imshow("yellow", yellow_mask);
+	yellow_mask = thresh_frame_in_HSV(img, yellow_HSV_th_min, yellow_HSV_th_max, verbous);
+	bitwise_or(yellow_mask, binary, binary);
 
-//	eq_white_mask = get_binary_from_equalized_grayscale(img);
-//	bitwise_or(eq_white_mask, binary, binary);
+	eq_white_mask = get_binary_from_equalized_grayscale(img);
+	bitwise_or(eq_white_mask, binary, binary);
 
 	sobel_mask = thresh_frame_sobel(img, 3);
 	bitwise_or(sobel_mask, binary, binary);
@@ -116,13 +117,13 @@ Mat binarize(Mat img, bool verbous = false)
 	//namedWindow("sobel mask", WINDOW_NORMAL);
 	//imshow("sobel mask", sobel_mask);
 
-	if (false)
+	if (verbous)
 	{
-		namedWindow("yellow mask", WINDOW_NORMAL);
-		imshow("yellow mask", yellow_mask);
+		//namedWindow("yellow mask", WINDOW_NORMAL);
+		//imshow("yellow mask", yellow_mask);
 
-		namedWindow("eq white mask", WINDOW_NORMAL);
-		imshow("eq white mask", eq_white_mask);
+		//namedWindow("eq white mask", WINDOW_NORMAL);
+		//imshow("eq white mask", eq_white_mask);
 
 		namedWindow("sobel mask", WINDOW_NORMAL);
 		imshow("sobel mask", sobel_mask);

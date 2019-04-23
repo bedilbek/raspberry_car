@@ -63,6 +63,50 @@ double Line::curvature_meter()
 	return result;
 }
 
+Mat Line::draw(Mat mask, Scalar color, int line_width, bool average)
+{
+	int height, width;
+
+	height = mask.rows;
+	width = mask.cols;
+
+	vector<double> plot_y = linspace(0, height, height, false);
+
+	vector<double> coeffs;
+
+	coeffs = average ? this->average_fit(): this->last_fit_pixel;
+
+	vector<double> line_center;
+	for (int i = 0; i < plot_y.size(); i++) {
+		line_center.push_back(coeffs[0] * pow(plot_y[i], 2) + coeffs[1] * plot_y[i] + coeffs[2]);
+	}
+
+	vector<double> line_left_side, line_right_side;
+
+	for (int i=0; i<line_center.size(); i++)
+	{
+		line_left_side.push_back(line_center[i] - line_width / 2);
+		line_right_side.push_back(line_center[i] + line_width / 2);
+	}
+
+	vector<Point> pts_left, pts_right;
+	for (int j = 0; j < plot_y.size(); j++) {
+		pts_left.emplace_back(static_cast<int>(line_left_side[j]), static_cast<int>(plot_y[j]));
+		pts_right.emplace_back(static_cast<int>(line_right_side[j]), static_cast<int>(plot_y[j]));
+	}
+
+	const Point *first_line_points[1] = { &pts_left[0]};
+	int number_of_first_points = pts_left.size();
+	const Point *second_line_points[1] = { &pts_right[0]};
+	int number_of__second_points = pts_left.size();
+	imshow("help", mask);
+	waitKey(0);
+	// TODO: fix detected lane adding
+	fillPoly(mask, first_line_points, &number_of_first_points, 1, color, LINE_8);
+	fillPoly(mask, second_line_points, &number_of__second_points, 1, color, LINE_8);
+
+}
+
 
 double compute_offset_from_center(Line line_lt, Line line_rt, int frame_width)
 {
@@ -105,8 +149,6 @@ double compute_offset_from_center(Line line_lt, Line line_rt, int frame_width)
 
 array<Line, 2> get_fits_by_sliding_windows(Mat birdeye_binary, int n_windows, bool verbose)
 {
-    float ym_per_pix = 30 / 720;
-    float xm_per_pix = 3.7 / 700;
     Line line_lt, line_rt;
 	int height = birdeye_binary.rows;
 	int width = birdeye_binary.cols;
@@ -222,8 +264,8 @@ array<Line, 2> get_fits_by_sliding_windows(Mat birdeye_binary, int n_windows, bo
 			all_x_pix.push_back(0);
 			all_y_pix.push_back(0);
 		}
-		transform(line_lt.all_x.begin(), line_lt.all_x.end(), all_x_pix.begin(), [xm_per_pix](float x) { return x * xm_per_pix; });
-		transform(line_lt.all_y.begin(), line_lt.all_y.end(), all_y_pix.begin(), [ym_per_pix](float y) { return y * ym_per_pix; });
+		transform(line_lt.all_x.begin(), line_lt.all_x.end(), all_x_pix.begin(), [](float x) { return x * xm_per_pix; });
+		transform(line_lt.all_y.begin(), line_lt.all_y.end(), all_y_pix.begin(), [](float y) { return y * ym_per_pix; });
 		left_fit_meter = poly_fit(all_x_pix, all_y_pix, 2);
 	}
 
@@ -242,8 +284,8 @@ array<Line, 2> get_fits_by_sliding_windows(Mat birdeye_binary, int n_windows, bo
 			all_x_pix.push_back(0);
 			all_y_pix.push_back(0);
 		}
-		transform(line_rt.all_x.begin(), line_rt.all_x.end(), all_x_pix.begin(), [xm_per_pix](float x) { return x * xm_per_pix; });
-		transform(line_rt.all_y.begin(), line_rt.all_y.end(), all_y_pix.begin(), [ym_per_pix](float y) { return y * ym_per_pix; });
+		transform(line_rt.all_x.begin(), line_rt.all_x.end(), all_x_pix.begin(), [](float x) { return x * xm_per_pix; });
+		transform(line_rt.all_y.begin(), line_rt.all_y.end(), all_y_pix.begin(), [](float y) { return y * ym_per_pix; });
 		right_fit_meter = poly_fit(all_x_pix, all_y_pix, 2);
 	}
 
@@ -358,5 +400,70 @@ void get_fits_by_previous_fits(Mat birdeye_binary, Line line_lt, Line line_rt, b
 
     // if (verbose) { }
 }
+
+vector<double> linspace(double start, double stop, int num, bool endpoint) {
+    vector<double> array;
+    double step = (stop-start) / (num-1);
+
+    if (!endpoint) stop -= 1;
+    while(start <= stop) {
+        array.push_back(start);
+        start += step;           // could recode to better handle rounding errors
+    }
+    return array;
+}
+
+Mat draw_back_onto_the_road(Mat img_undistorted, Mat Minv, Line line_lt, Line line_rt, bool keep_state)
+{
+	int height, width;
+	height = img_undistorted.rows;
+	width = img_undistorted.cols;
+
+	vector<double> left_fit, right_fit;
+	if (keep_state)
+    {
+	    left_fit = line_lt.average_fit();
+	    right_fit = line_rt.average_fit();
+    } else
+    {
+        left_fit = line_lt.last_fit_pixel;
+        right_fit = line_rt.last_fit_pixel;
+    }
+
+	// Generate x and y values for plotting
+	vector<double> ploty = linspace(0, height, height, false);
+	vector<double> left_fitx, right_fitx;
+	for (int i=0; i<ploty.size(); i++)
+	{
+		left_fitx.push_back(left_fit[0] * pow(ploty[i], 2) + left_fit[1] * ploty[i] + left_fit[2]);
+		right_fitx.push_back(right_fit[0] * pow(ploty[i], 2) + right_fit[1] * ploty[i] + right_fit[2]);
+	}
+	// draw road as green polygon on original frame
+	//	road_warp = np.zeros_like(img_undistorted, dtype=np.uint8)
+	//	pts_left = np.array([np.transpose(np.vstack([left_fitx, ploty]))])
+	//	pts_right = np.array([np.flipud(np.transpose(np.vstack([right_fitx, ploty])))])
+	//	pts = np.hstack((pts_left, pts_right))
+	//	cv2.fillPoly(road_warp, np.int_([pts]), (0, 255, 0))
+	//	road_dewarped = cv2.warpPerspective(road_warp, Minv, (width, height))  # Warp back to original image space
+	//	blend_onto_road = cv2.addWeighted(img_undistorted, 1., road_dewarped, 0.3, 0)
+
+	//now separately draw solid lines to highlight them
+	Mat line_warp = Mat::zeros(img_undistorted.rows, img_undistorted.cols, img_undistorted.type());
+	line_lt.draw(line_warp, {255, 0, 0}, 50, keep_state);
+	line_rt.draw(line_warp, {0, 0, 255}, 50, keep_state);
+	Mat line_dewarped;
+	warpPerspective(line_warp, line_dewarped, Minv, Size(width, height));
+
+	//	lines_mask = blend_onto_road.copy()
+	//	idx = np.any([line_dewarped != 0][0], axis=2)
+	//	lines_mask[idx] = line_dewarped[idx]
+	//
+	//	blend_onto_road = cv2.addWeighted(src1=lines_mask, alpha=0.8, src2=blend_onto_road, beta=0.5, gamma=0.)
+	//
+	//	return blend_onto_road
+	return line_dewarped;
+
+}
+
 
 
