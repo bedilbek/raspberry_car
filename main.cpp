@@ -13,9 +13,10 @@
 #include "ir_wall_detector.h"
 #include "ir_line_detector.h"
 #include <thread>
+#include <stdlib.h>
 
 #include <csignal>
-
+#include "datagram_socket_server.h"
 
 using namespace std;
 using namespace raspicam;
@@ -63,12 +64,14 @@ void video_writer()
 
 
 int main() {
+    datagram_socket_server *s = new datagram_socket_server(8059, "localhost", true, true);
+    char message[1024];
 
     //  setup signal handler for SIGINT
     signal(SIGINT, signal_handler);
 
     std::thread v(video_writer);
-    namedWindow("hello", WINDOW_NORMAL);
+//    namedWindow("hello", WINDOW_NORMAL);
 
     if (wiringPiSetup() == -1)
     {
@@ -80,44 +83,54 @@ int main() {
     int speed = 0;
 
     controller.init_dc_motor();
-    char input = '0';
-    while (true) {
-        input = static_cast<char>(waitKey(15));
-        switch (input) {
-            case 'w': {
-                speed += 15;
-                if (speed >= 100)
-                    speed = 100;
-                break;
-            }
-            case 'd': {
-                steering -= 15;
-                if (steering <= -100)
-                    steering = -100;
-                break;
-            }
-            case 'a': {
-                steering += 15;
-                if (steering >= 100)
-                    steering = 100;
-                break;
+    cout << "ready to receive" << endl;
+    while (1)
+    {
+        s->receive(message, 1024);
+        speed = (int)message[0] == 0 ? ((int)message[1]) * -1 : (int) message[1];
+        steering = (int)message[2] == 0 ? ((int)message[3]) : (int) message[3] * -1;
+        controller.turn(steering, speed);
+//        cout <<message << "::::" << speed << "." << steering <<  endl;
+        delay(20);
+    }
 
-            }
-            case 's': {
-                speed -= 15;
-                if (speed <= -100)
-                    speed = -100;
-                break;
-            }
-            default: {
-                break;
-            }
-        }
+//    char input = '0';
+//    while (true) {
+//        input = static_cast<char>(waitKey(15));
+//        switch (input) {
+//            case 'w': {
+//                speed += 15;
+//                if (speed >= 100)
+//                    speed = 100;
+//                break;
+//            }
+//            case 'd': {
+//                steering -= 15;
+//                if (steering <= -100)
+//                    steering = -100;
+//                break;
+//            }
+//            case 'a': {
+//                steering += 15;
+//                if (steering >= 100)
+//                    steering = 100;
+//                break;
+//
+//            }
+//            case 's': {
+//                speed -= 15;
+//                if (speed <= -100)
+//                    speed = -100;
+//                break;
+//            }
+//            default: {
+//                break;
+//            }
+//        }
 //        cout << input << "speed: " << speed << " steering: " << steering << endl;
 
 //        cout<<"frame: "<<frame_counter<<" steering: [" << 100.0 - steering << "] speed: [" << speed <<"]" << endl;
-        controller.turn(steering, speed);
-    }
+
 
 
     return 0;
