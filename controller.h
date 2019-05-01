@@ -11,7 +11,7 @@ public:
 
     void init_dc_motor();
 
-    void forward(int speed);
+    void forward(int left,int right);
 
     void left(int speed);
 
@@ -21,7 +21,7 @@ public:
 
     void stop();
 
-    void backward(int speed);
+    void backward(int left,int right);
 
     void go_forward_for_5();
 
