@@ -8,16 +8,16 @@ using namespace std;
 
 int main()
 {
-    datagram_socket_server *s = new datagram_socket_server(8059, "localhost", true, true);
+	datagram_socket_server *s = new datagram_socket_server(8059, "localhost", true, true);
 
-    char message[1024];
-    cout << "hello from sqldeveloper" << endl;
-    while (1)
-    {
-        s->receive(message, 1024);
+	char message[1024];
+	cout << "hello from sqldeveloper" << endl;
+	while (1)
+	{
+		s->receive(message, 1024);
 //        int speed = (int)message[0];
 //        int steering = (int)message[1];
-        cout << message <<  endl;
-    }
-    return 0;
+		cout << message <<  endl;
+	}
+	return 0;
 }
