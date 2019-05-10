@@ -42,7 +42,11 @@ void on_hsv_change(int, void *)
 
 int main()
 {
-	frame = imread("files/blur_turn.png");
+	frame = imread("files/417429dc-631e-4527-b54e-56b9519a3eef.jpg");
+	int w, h;
+	w = frame.cols;
+	h = frame.rows;
+	frame = frame(Range())
 
 	namedWindow(window_name, WINDOW_AUTOSIZE);
 //	Mat binarized = binarize(frame, true);
