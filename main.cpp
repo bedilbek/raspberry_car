@@ -38,7 +38,7 @@ enum MODE  {
 	AI_MODE,
 	JOYSTICK_MODE
 };
-int mode = ALGORITHM_MODE;
+int mode = JOYSTICK_MODE;
 int udp_socket_port = 8059;
 string udp_socket_host = "localhost";
 int video_frame_rate = 10;
@@ -56,9 +56,9 @@ void usage()
 	     "Usage: [--mode MODE] [options]\n"
 	     "Mode:\n"
 	     "-m MODE, --mode MODE                    Set the mode for the car (default: 3)\n"
-	     "   1 - ALGORITHM\n"
-	     "   2 - AI\n"
-	     "   3 - JOYSTICK\n"
+	     "   0 - ALGORITHM\n"
+	     "   1 - AI\n"
+	     "   2 - JOYSTICK\n"
 	     "Options:\n"
 	     "-p PORT, --port PORT                    PORT number for UDP socket server initialization for joystick (default: 8059)\n"
 	     "-s HOST, --host HOST                    HOST string for UDP socker server initialization for joystick (default: localhost)\n"
