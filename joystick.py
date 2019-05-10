@@ -32,15 +32,38 @@ ap.add_argument("--socket", dest='socket', action='store_true', default=False,
 
 args = vars(ap.parse_args())
 
+AXIS_ANALOG1_X = 0
+AXIS_ANALOG1_Y = 1
+AXIS_L2 = 2
+AXIS_ANALOG2_X = 3
+AXIS_ANALOG2_Y = 4
+AXIS_R2 = 5
+
+BUTTON_X = 0
+BUTTON_ROUND = 1
+BUTTON_TRIANGLE = 2
+BUTTON_SQUARE = 3
+BUTTON_L1 = 4
+BUTTON_R1 = 5
+BUTTON_L2 = 6
+BUTTON_R2 = 7
+BUTTON_SELECT = 8
+BUTTON_START = 9
+BUTTON_PS = 10
+BUTTON_ANALOG1 = 11
+BUTTON_ANALOG2 = 12
+
 # Select which axes to check
 THROTTLE_AXIS = args['throttle']
 STEERING_AXIS = args['steering']
 FREQUENCY_CHECK = args['frequency']
 BREAK_BUTTON = args['break_button']
 STEP = args['step']
-axes_to_check = [THROTTLE_AXIS, STEERING_AXIS]
+axes_to_check = [AXIS_ANALOG1_Y, AXIS_ANALOG2_X]
 latest_throttle_value = 0
+latest_throttle__axis_value = 0
 latest_steering_value = 0
+started = False
 # Begin reading the controller
 
 if args['debug']:
@@ -60,21 +83,58 @@ if args['socket']:
 
 try:
     while True:
-
         pygame.event.pump()
         changed = False
         for current_axis in axes_to_check:
             new_value = j.get_axis(current_axis)
-            new_value *= 100
-            if current_axis == THROTTLE_AXIS and (abs(new_value) > (abs(latest_throttle_value) + STEP) or abs(new_value) <
-                                                  (abs(latest_throttle_value) - 5)):
-                latest_throttle_value = new_value
-                changed = True
+            new_value *= (100 / 1.4)
             if current_axis == STEERING_AXIS and (abs(new_value) > (abs(latest_steering_value) + STEP) or abs(new_value) <
                                                   (abs(latest_steering_value) - 5)):
                 latest_steering_value = new_value
                 changed = True
-                message = ""
+
+        if j.get_button(BUTTON_L2) == 1:
+            changed = True
+            if latest_throttle_value == -70:
+                changed = False
+            latest_throttle_value = -70
+
+        if j.get_button(BUTTON_L1) == 1:
+            changed = True
+            if latest_throttle_value == -90:
+                changed = False
+            latest_throttle_value = -90
+
+        if j.get_button(BUTTON_R2) == 1:
+            changed = True
+            if latest_throttle_value == -60:
+                changed = False
+            latest_throttle_value = -60
+
+        if j.get_button(BUTTON_R1) == 1:
+            changed = True
+            if latest_throttle_value == -80:
+                changed = False
+            latest_throttle_value = -80
+
+        if j.get_button(BUTTON_ROUND) == 1:
+            changed = True
+            if latest_throttle_value == 0:
+                changed = False
+            latest_throttle_value = 0
+
+        if j.get_button(BUTTON_X) == 1:
+            changed = True
+            if started:
+                changed = False
+            started = True
+
+        if j.get_button(BUTTON_SQUARE) == 1:
+            changed = True
+            if not started:
+                changed = False
+            started = False
+
         if changed:
             if args['debug']:
                 print 'throttle: %.2f steering: %.2f' % (latest_throttle_value, latest_steering_value)
@@ -85,13 +145,14 @@ try:
             steering_direction = 0 if latest_steering_value < 0 else 1
             message = message + chr(steering_direction)
             message = message + chr(abs(int(latest_steering_value)))
+            message = message + chr(int(started))
             if args['socket']:
                 sent = sock.sendto(bytes(message), server_address)
 
         time.sleep(1 / FREQUENCY_CHECK)
 
-        if j.get_button(BREAK_BUTTON) == 1:
-            break
+        # if j.get_button(BREAK_BUTTON) == 1:
+        #     break
 finally:
     if args['socket']:
         print('closing socket')
