@@ -12,10 +12,10 @@ Mat bird_eye(cv::Mat img, cv::Mat forw_mat, cv::Mat backw_mat, bool verbose)
 
 	float w_out = 200;
 	float bhratio = 0.853;
-	float thratio = 0.4;
-	float wtratio = 0.28;
+	float thratio = 0.208;
+	float wtratio = 0.41;
 	float wbratio = 1 - wtratio;
-	float ratio = 1.4;
+	float ratio = 0.3;
 
     width = img.cols;
     height = img.rows;

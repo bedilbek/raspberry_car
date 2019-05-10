@@ -25,6 +25,7 @@ add_executable(zebra zebra.cpp)
 add_executable(term terminal.cpp)
 add_executable(udp_server udp_socket_server.cpp)
 add_executable(udp_client udp_socket_client.cpp)
+add_executable(obstacle_avoidance obstacle_avoidance.cpp)
 
 add_executable(lane_detector lane_detector/lane_detector.cpp)
 add_executable(lane_detector_img lane_detector/lane_detector_img.cpp)
@@ -35,6 +36,7 @@ add_library(ir_wall ir_wall_detector.cpp)
 add_library(ir_line ir_line_detector.cpp)
 add_library(cross_walk_detector cross_walk_detector.cpp)
 add_library(datagram_server datagram_socket_server.cpp )
+add_library(libSonar libSonar.cpp)
 
 # Lane Detection Libs
 add_library(binarization_utils lane_detector/binarization_utils.cpp color_masking.cpp)
@@ -51,7 +53,7 @@ target_link_libraries(udp_server datagram_server)
 
 # Linking Libs from /usr/local/lib directory
 link_directories(/usr/local/lib)
-target_link_libraries(lane_detector binarization_utils bird_eye line_utils poly_regres ${OpenCV_LIBS})
+target_link_libraries(lane_detector binarization_utils bird_eye ir_line line_utils poly_regres ${OpenCV_LIBS})
 target_link_libraries(traffic_light_detection ${OpenCV_LIBS})
 target_link_libraries(lane_detector controller wiringPi raspicam_cv binarization_utils bird_eye line_utils poly_regres ${OpenCV_LIBS})
 target_link_libraries(lane_detector_img binarization_utils bird_eye line_utils poly_regres ${OpenCV_LIBS})
@@ -59,6 +61,7 @@ target_link_libraries(camera raspicam_cv ${OpenCV_LIBS})
 target_link_libraries(zebra bird_eye binarization_utils ${OpenCV_LIBS})
 target_link_libraries(main raspicam_cv ${OpenCV_LIBS})
 target_link_libraries(main datagram_server)
+target_link_libraries(obstacle_avoidance wiringPi libSonar controller ir_wall)
 
 target_link_libraries(term ncurses pthread ${OpenCV_LIBS})
 

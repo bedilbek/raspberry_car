@@ -15,7 +15,7 @@ public:
 
     void left(int speed);
 
-    void turn(int steering,int speed);
+    void move(int steering,int speed);
 
     void right(int speed);
 

@@ -28,16 +28,14 @@ void Controller::init_dc_motor() {
     softPwmCreate(IN4_PIN, 0, 100);
 }
 
-void Controller::turn(int steering,int speed) {
+void Controller::move(int steering,int speed) {
     int left,right;
-
     if(speed == 0)
         stop();
-
     else if(speed>0){
         //forward
         if(steering>0){
-            left = speed -steering;
+            left = speed - steering;
             right = speed;
         }else{
             steering = -steering;
@@ -58,9 +56,7 @@ void Controller::turn(int steering,int speed) {
         }
         backward(left,right);
     }
-
 }
-
 
 void Controller::forward(int left,int right) {
     softPwmWrite(IN1_PIN, left);
