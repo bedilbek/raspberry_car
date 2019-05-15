@@ -63,49 +63,7 @@ double Line::curvature_meter()
 	return result;
 }
 
-Mat Line::draw(Mat mask, Scalar color, int line_width, bool average)
-{
-	int height, width;
 
-	height = mask.rows;
-	width = mask.cols;
-
-	vector<double> plot_y = linspace(0, height, height, false);
-
-	vector<double> coeffs;
-
-	coeffs = average ? this->average_fit(): this->last_fit_pixel;
-
-	vector<double> line_center;
-	for (int i = 0; i < plot_y.size(); i++) {
-		line_center.push_back(coeffs[0] * pow(plot_y[i], 2) + coeffs[1] * plot_y[i] + coeffs[2]);
-	}
-
-	vector<double> line_left_side, line_right_side;
-
-	for (int i=0; i<line_center.size(); i++)
-	{
-		line_left_side.push_back(line_center[i] - line_width / 2);
-		line_right_side.push_back(line_center[i] + line_width / 2);
-	}
-
-	vector<Point> pts_left, pts_right;
-	for (int j = 0; j < plot_y.size(); j++) {
-		pts_left.emplace_back(static_cast<int>(line_left_side[j]), static_cast<int>(plot_y[j]));
-		pts_right.emplace_back(static_cast<int>(line_right_side[j]), static_cast<int>(plot_y[j]));
-	}
-
-	const Point *first_line_points[1] = { &pts_left[0]};
-	int number_of_first_points = pts_left.size();
-	const Point *second_line_points[1] = { &pts_right[0]};
-	int number_of__second_points = pts_left.size();
-	imshow("help", mask);
-	waitKey(0);
-	// TODO: fix detected lane adding
-	fillPoly(mask, first_line_points, &number_of_first_points, 1, color, LINE_8);
-	fillPoly(mask, second_line_points, &number_of__second_points, 1, color, LINE_8);
-
-}
 
 
 double compute_offset_from_center(Line line_lt, Line line_rt, int frame_width)
@@ -449,8 +407,8 @@ Mat draw_back_onto_the_road(Mat img_undistorted, Mat Minv, Line line_lt, Line li
 
 	//now separately draw solid lines to highlight them
 	Mat line_warp = Mat::zeros(img_undistorted.rows, img_undistorted.cols, img_undistorted.type());
-	line_lt.draw(line_warp, {255, 0, 0}, 50, keep_state);
-	line_rt.draw(line_warp, {0, 0, 255}, 50, keep_state);
+	//line_lt.draw(line_warp, {255, 0, 0}, 50, keep_state);
+	//line_rt.draw(line_warp, {0, 0, 255}, 50, keep_state);
 	Mat line_dewarped;
 	warpPerspective(line_warp, line_dewarped, Minv, Size(width, height));
 

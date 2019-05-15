@@ -1,250 +1,223 @@
 // LaneDetector.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
-
-#include "pch.h"
+#include <opencv2/opencv.hpp>
+#include <iostream>
+#include <fstream>
 #include "binarization_utils.h"
 #include "bird_eye.h"
-#include "line_utils.h"
-#include <wiringPi.h>
-#include <opencv2/opencv.hpp>
-#include "globals.h"
-#include <iostream>
 #include <vector>
-#include <raspicam/raspicam_cv.h>
-#include "../controller.h"
 
 using namespace std;
-using namespace cv;
-using namespace raspicam;
 
-int h = 0, s = 0, v = 0;
-int hm = 0, sm = 0, vm = 0;
-int th1 = 1, th2 = 1;
+int thr = 0, str = 0;
+int h = 0, s = 40, v = 102;
+int hm = 5, sm = 255, vm = 255;
+int center = 117;
+int clip_limit = 2;
+int tile_grid_size = 8;
 
-Scalar yellow_th_min = { 160, 40, 180 };
-Scalar yellow_th_max = { 255, 255, 255 };
+int b = 2;
+int c = 20;
 
-Scalar first_min = { 18, 150, 150 };
-Scalar first_max = { 38, 255, 255 };
+Scalar min_th = { 18, 52, 102 };
+Scalar max_th = { 255, 255, 255 };
 
-Scalar highlight_min = { 30, 100, 240 };
-Scalar highlight_max = { 38, 255, 255 };
-
-Scalar medium_min = { 30, 240, 100 };
-Scalar medium_max = { 38, 255, 255 };
-
-Scalar highlight2_min = { 27, 70, 200 };
-Scalar highlight2_max = { 38, 255, 255 };
-
-Scalar remove1_min = { 0, 0, 200 };
-Scalar remove1_max = { 38, 125, 255 };
-
-
-static void on_min(int, void*)
+void update(int, void*)
 {
-	yellow_th_min = Scalar(h, s, v);
+	min_th = Scalar(h, s, v);
+	max_th = Scalar(hm, sm, vm);
 }
 
-static void on_max(int, void*)
-{
-	yellow_th_max = Scalar(hm, sm, vm);
-}
-
-static void on_canny(int, void*)
-{
-
-}
+double minth = 0;
+double maxth = 0;
 
 int main()
 {
-	if (wiringPiSetup() == -1)
-		return 0;
-
-
-	Controller controller;
-	controller.init_dc_motor();
-
-	RaspiCam_Cv video;
-	video.open();
-
-	if (!video.isOpened()) {
-		cout << "Error opening video stream or file" << endl;
-		return -1;
-	}
-	//short kdata[] = {};
-
 	int roi = 20;
-	Point seed;
 	bool playback = true;
-	Mat frame, mask, edge, first, highlight, medium, highligh;
-	Mat r1, f, b;
-	Mat prev, res;
+	Mat frame, mask;
+	Mat fr, bc;
 	int indxl = -1, indxr = -1;
 	int pindxl = -1, pindxr = -1;
 	vector<int> reduced;
-	int seq = 10;
+	int seq = -1;
 	int threshold = 50;
-	bool left = true, right = true;
 	int interval = 3;
-	int cframe = 0;
 	int pthreshold = 3;
-	Mat kernel = Mat(5, 5, CV_8UC1, Scalar(1));
-	Point p1, p2;
+	
+
+	namedWindow("Controls", WINDOW_GUI_NORMAL);
+	createTrackbar("H", "Controls", &h, 255, update);
+	createTrackbar("S", "Controls", &s, 255, update);
+	createTrackbar("V", "Controls", &v, 255, update);
+
+	createTrackbar("Hm", "Controls", &hm, 255, update);
+	createTrackbar("Sm", "Controls", &sm, 255, update);
+	createTrackbar("Vm", "Controls", &vm, 255, update);
+
+	createTrackbar("Clip", "Controls", &clip_limit, 100);
+	createTrackbar("Tile", "Controls", &tile_grid_size, 100);
+
+	createTrackbar("B", "Controls", &b, 100);
+	createTrackbar("C", "Controls", &c, 100);
+
+	VideoCapture video("output.avi");
+	
+	
+	int offset = 0;
+	int prev_offset = 0;
+	int direction = 0;
+	int frame_count = 0;
+	int lane_width = 0;
 
 	while (1)
 	{
 		if (playback)
 		{
-			// Capture frame-by-frame
-			video.grab();
-			video.retrieve(frame);
-			resize(frame, frame, Size(384, 216));
-//            imshow("frame", frame);
-			// If the frame is empty, break immediately
+			video >> frame;
+			//Yellow Mask
 			if (frame.empty())
 				break;
 		}
 
+		frame_count++;
+		
 		Mat colorMask = Mat(frame.rows, frame.cols, CV_8UC1, Scalar(0));
-		colorMask = thresh_frame_in_LAB(frame, yellow_th_min, yellow_th_max, false);
+		cvtColor(frame, colorMask, COLOR_BGR2GRAY);
+		
+		//Bird eye transformation
+		colorMask = bird_eye(colorMask, fr, bc, false);
+		resize(colorMask, colorMask, Size(colorMask.cols / 5, colorMask.rows / 5));
+		Mat original;
+		resize(frame, original, Size(colorMask.cols, colorMask.cols * frame.rows / frame.cols));
 
-		colorMask = bird_eye(colorMask, f, b, false);
-		mask = colorMask(Range(colorMask.rows - roi, colorMask.rows), Range::all());
-		reduce(mask, reduced, 0, CV_REDUCE_SUM, CV_32SC1);
+		GaussianBlur(colorMask, colorMask, Size(3, 3), 20);
+		Canny(colorMask, colorMask, 0, 40);
+		colorMask = colorMask(Range(colorMask.rows * 0.8 , colorMask.rows - 40), Range::all());
+		floodFill(colorMask, Point(colorMask.cols / 2 + prev_offset, colorMask.rows - 5), 150);
+		inRange(colorMask, { 149 }, { 151 }, colorMask);
 
-		for (int i = 0, j = reduced.size() - 1;
-		     i < (reduced.size() / 2)
-		     && j >(reduced.size() / 2); i++, j--)
+		int p_offset = 5;
+		Point pl1 = Point(0, 0);
+		Point pl2 = Point(0, 0);
+
+		for (int j = 0, c = 0; j < colorMask.cols; j++)
 		{
-			if ((i < pindxl + threshold && i > pindxl - threshold) || pindxl < 0)
+			if (colorMask.at<unsigned char>(colorMask.rows - 2, j) > 0)
 			{
-				if (reduced[i] > 0 && indxl < 0 && left)
-				{
-					indxl = i;
-				}
-			}
-
-			/// Canny detector
-//		Canny( detected_edges, detected_edges, lowThreshold, lowThreshold*ratio, kernel_size );
-
-			if ((j < pindxr + threshold && j > pindxr - threshold) || pindxr < 0)
-			{
-				if (reduced[j] > 0 && indxr < 0 && right)
-				{
-					indxr = j;
-				}
-			}
-		}
-
-		for (int i = colorMask.rows - 1; i > colorMask.rows - threshold; i--)
-		{
-			for (int j = indxl - threshold / 2, count = 0; j < indxl + threshold / 2 && j < colorMask.cols; j++)
-			{
-				if (j < 0)
-				{
-					j = 0;
-				}
-
-				if (colorMask.at<unsigned char>(i, j) > 0)
-				{
-					count++;
-				}
-				else
-				{
-					count = 0;
-				}
-
-				if (count > seq && colorMask.at<unsigned char>(i, j) != 150)
-				{
-					floodFill(colorMask, Point(j, i), Scalar(150));
-					break;
-				}
-			}
-		}
-
-		for (int i = colorMask.rows - 1; i > colorMask.rows - threshold; i--)
-		{
-			for (int j = indxr - threshold / 2, count = 0; j < indxr + threshold / 2 && j < colorMask.cols; j++)
-			{
-				if (j < 0)
-				{
-					j = 0;
-				}
-
-				if (colorMask.at<unsigned char>(i, j) > 0)
-				{
-					count++;
-				}
-				else
-				{
-					count = 0;
-				}
-
-				if (count > seq && colorMask.at<unsigned char>(i, j) != 150)
-				{
-					floodFill(colorMask, Point(j, i), Scalar(150));
-					break;
-				}
-			}
-		}
-
-		inRange(colorMask, Scalar(149), Scalar(151), colorMask);
-		erode(colorMask, colorMask, kernel);
-		Canny(colorMask, colorMask, 80, 200);
-//		imshow("img", colorMask);
-
-		pindxl = indxl;
-		pindxr = indxr;
-		indxl = -1;
-		indxr = -1;
-
-		for (int i = 0; i < colorMask.cols; i++)
-		{
-			if (colorMask.at<unsigned char>(colorMask.rows - 80, i) > 0)
-			{
-				p1 = Point(i, colorMask.rows - 80);
+				pl1 = Point(j, colorMask.rows - 2);
 				break;
 			}
 		}
 
-		for (int i = 0; i < colorMask.cols; i++)
+		for (int j = 0, c = 0; j < colorMask.cols; j++)
 		{
-			if (colorMask.at<unsigned char>(colorMask.rows - 50, i) > 0)
+			if (colorMask.at<unsigned char>(p_offset, j) > 0)
 			{
-				p2 = Point(i, colorMask.rows - 50);
+				pl2 = Point(j, p_offset);
 				break;
 			}
 		}
-		double steering;
-		steering = ((p2.y - p1.y) != 0) ? atan(((double)(p1.x - p2.x)) / ((double)(p2.y - p1.y))) * 300.0 / 3.14 : 0;
-		steering *= -1;
-//		if ((p2.y - p1.y) != 0)
-//			cout << atan(((double)(p1.x - p2.x)) / ((double)(p2.y - p1.y))) * 280.0 / 3.14 << endl;
-//		else
-//			cout << 0 << endl;
 
-		if (steering > 0) {
-//			cout<<"x:"<<x<<endl;
-			controller.turn(100.0 - steering, 100);
-		} else {
-			steering = -steering;
-//			cout<<"y:"<<y<<endl;
-			controller.turn(100, 100.0 - steering);
+		Point pr1 = Point(0, 0);
+		Point pr2 = Point(0, 0);
+		Mat flipped;
+
+		colorMask.copyTo(flipped);
+		cv::flip(flipped, flipped, 1);
+
+		for (int j = 0, c = 0; j < flipped.cols; j++)
+		{
+			if (flipped.at<unsigned char>(flipped.rows - 2, j) > 0)
+			{
+				pr1 = Point(j, flipped.rows - 2);
+				break;
+			}
 		}
 
-//		// Press  ESC on keyboard to exit
-//		char c = (char)waitKey(25);
-//		if (c == 27)
-//			break;
-//		if (c == 'p')
-//			playback = !playback;
+		for (int j = 0, c = 0; j < flipped.cols; j++)
+		{
+			if (flipped.at<unsigned char>(p_offset, j) > 0)
+			{
+				pr2 = Point(j, p_offset);
+				break;
+			}
+		}
+
+		double angl = 1.57;
+		double angr = 1.57;
+		
+		if ((pl1.x - pl2.x) != 0)
+			angl = atan(((double)(pl2.y - pl1.y) / (double)(pl2.x - pl1.x)));
+
+		if ((pr1.x - pr2.x) != 0)
+			angr = atan(((double)(pr2.y - pr1.y) / (double)(pr2.x - pr1.x)));
+
+		if (abs(angl) > abs(angr) && angl > 0)
+			direction = -1;
+		else if ( angr > 0)
+			direction = 1;
+		else
+			direction = 0;
+
+		prev_offset = 50 * direction;
+
+		//if (playback)
+		//	cout << (direction == 0 ? "forward" : direction == -1 ? "left" : "right") << "  " << (direction == 0 ? 90 : (direction == -1 ? 180 * angr / 3.14 : 180 * angl / 3.14)) << endl;
+
+		if (frame_count < 5)
+		{
+			int l = 0, r = 0;
+			vector<int> lane;
+			reduce(colorMask, lane, 0, REDUCE_SUM);
+
+			for (l = 0; l < lane.size() / 2; l++)
+				if (lane[l] > 0)
+					break;
+
+			for (int i = lane.size() - 1; i > 0; r++, i --)
+				if (lane[i] > 0)
+					break;
+
+			lane_width += lane.size() - l - r;
+			if (frame_count == 4)
+				lane_width /= frame_count;
+		}
+		else
+		{
+			int nonzero = 0;
+			if (direction == 0)
+			{
+				for (nonzero = 0; nonzero < colorMask.cols; nonzero++)
+					if (colorMask.at<unsigned char>(colorMask.rows - 2, nonzero) > 0)
+						break;
+				offset = colorMask.cols / 2 - lane_width / 2 - nonzero;
+			}
+			else if (direction == 1)
+			{
+				if ((pl1.x - pl2.x) != 0)
+					angr = atan(abs((double)(pl2.y - pl1.y) / (double)(pl2.x - pl1.x)));
+				offset = colorMask.cols / 2 - pl1.x - lane_width / 2 * sin(angr);
+				offset *= -1;
+			}
+			else
+			{
+				if ((pr1.x - pr2.x) != 0)
+					angl = atan(abs((double)(pr2.y - pr1.y) / (double)(pr2.x - pr1.x)));
+				offset = colorMask.cols / 2 - pr1.x - lane_width / 2 * sin(angl);
+			}
+
+			line(original, Point(original.cols / 2 + offset, original.rows - 5), Point(original.cols / 2, original.rows - 5), 150, 5);
+
+			if (playback)
+				cout << offset << endl;
+		}
+
+		imshow("R", original);
+
+		if (waitKey(150) == 'p')
+			playback = !playback;
 	}
-
-	// When everything done, release the video capture object
-	video.release();
-
-	// Closes all the frames
-	destroyAllWindows();
-
+	std::cout << "finished" << endl;
 	return 0;
 }

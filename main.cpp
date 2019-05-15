@@ -8,10 +8,7 @@
 #include <stdio.h>
 #include <softPwm.h>
 #include <zconf.h>
-#include "libSonar.h"
 #include "controller.h"
-#include "ir_wall_detector.h"
-#include "ir_line_detector.h"
 #include <thread>
 #include <stdlib.h>
 #include <fstream>

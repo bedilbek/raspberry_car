@@ -57,3 +57,22 @@ lane_detector/x64/Release/
 lab/
 
 canny_src/
+lane_detector/data\.csv
+
+lane_detector/linear_reg\.csv
+
+lane_detector/offset_test\.mp4
+
+lane_detector/output\.avi
+
+lane_detector/training_data\.csv
+
+lane_detector/test_run\.mp4
+
+lane_detector/test\.jpg
+
+lane_detector/test2\.jpg
+
+lane_detector/test3\.jpg
+
+lane_detector/test4\.jpg

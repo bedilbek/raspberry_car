@@ -39,7 +39,7 @@ public:
 
 	double curvature_meter();
 
-	Mat draw(Mat mask, Scalar color = {255, 0, 0}, int line_width = 50, bool average = false);
+	
 };
 
 /**
