@@ -11,27 +11,30 @@ Mat bird_eye(cv::Mat img, cv::Mat forw_mat, cv::Mat backw_mat, bool verbose)
     int width, height;
 
 	float w_out = 200;
-	float bhratio = 0.853;
-	float thratio = 0.4;
-	float wtratio = 0.28;
+	float bhratio = 1;
+	float thratio = 0.470;
+	float wtratio = 0.3;
 	float wbratio = 1 - wtratio;
-	float ratio = 1.4;
+	float ratio = 1.6;
 
     width = img.cols;
     height = img.rows;
 	width += w_out;
     Point2f src[4];
-    src[0] = Point2f(width - w_out / 2, height * bhratio);
-    src[1] = Point2f(w_out / (-2), height * bhratio);
-    src[2] = Point2f((width - w_out) * wtratio, height * thratio);
-    src[3] = Point2f((width - w_out) * wbratio, height * thratio);
+
+	src[0] = Point2f((width - w_out) * wtratio, height * thratio);
+	src[1] = Point2f((width - w_out) * wbratio, height * thratio);
+	src[2] = Point2f(w_out / (-2), height * bhratio);
+    src[3] = Point2f(width - w_out / 2, height * bhratio);
+
 
 	
     Point2f dest[4];
-    dest[0] = Point2f(width, width * ratio);
-    dest[1] = Point2f(0, width * ratio);
-    dest[2] = Point2f(0, 0);
-    dest[3] = Point2f(width, 0);
+	dest[0] = Point2f(0, 0);
+	dest[1] = Point2f(width, 0);
+	dest[2] = Point2f(0, width * ratio);
+    dest[3] = Point2f(width, width * ratio);
+
 
     forw_mat = getPerspectiveTransform(src, dest);
     backw_mat = getPerspectiveTransform(dest, src);
