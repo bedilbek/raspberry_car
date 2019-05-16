@@ -8,7 +8,10 @@
 #include <stdio.h>
 #include <softPwm.h>
 #include <zconf.h>
+#include "libSonar.h"
 #include "controller.h"
+#include "ir_wall_detector.h"
+#include "ir_line_detector.h"
 #include <thread>
 #include <stdlib.h>
 #include <fstream>
@@ -96,6 +99,7 @@ char* generate_name()
     uuid[37] = 'a';
     uuid[38] = 'v';
     uuid[39] = 'i';
+    uuid[40] = '\0';
     return uuid;
 }
 void video_writer()
@@ -138,6 +142,13 @@ void video_writer()
             filesave[39] = 't';
             if (logging)
                 fout.open(filesave);
+        }
+        raspiCam_cv.grab();
+        raspiCam_cv.retrieve(img);
+        if (img_show)
+        {
+            imshow("frame", img);
+            waitKey(10);
         }
 
         while (started) {
@@ -184,9 +195,6 @@ void mode_joystick()
 	datagram_socket_server *s = new datagram_socket_server(udp_socket_port, const_cast<char *>(udp_socket_host.c_str()), true, true);
 	char message[1024];
 
-	std::thread v(video_writer);
-
-
 	controller.init_dc_motor();
 	cout << "ready to receive" << endl;
 	while (1)
@@ -231,6 +239,8 @@ int main(int argc, char **argv) {
 			{"help",            no_argument,        nullptr, 'h'},
 			{nullptr,           no_argument,        nullptr, 0}
 	};
+
+    std::thread v(video_writer);
 
 	int opt;
 	while ( ( opt = getopt_long(argc, argv, short_options, long_options, nullptr)) != -1)
