@@ -16,8 +16,8 @@ int center = 117;
 int clip_limit = 2;
 int tile_grid_size = 8;
 
-int b = 2;
-int c = 20;
+int b = 80;
+int c = 0;
 
 Scalar min_th = { 18, 52, 102 };
 Scalar max_th = { 255, 255, 255 };
@@ -47,16 +47,16 @@ int main()
 	
 
 	namedWindow("Controls", WINDOW_GUI_NORMAL);
-	createTrackbar("H", "Controls", &h, 255, update);
-	createTrackbar("S", "Controls", &s, 255, update);
-	createTrackbar("V", "Controls", &v, 255, update);
+	//createTrackbar("H", "Controls", &h, 255, update);
+	//createTrackbar("S", "Controls", &s, 255, update);
+	//createTrackbar("V", "Controls", &v, 255, update);
 
-	createTrackbar("Hm", "Controls", &hm, 255, update);
-	createTrackbar("Sm", "Controls", &sm, 255, update);
-	createTrackbar("Vm", "Controls", &vm, 255, update);
+	//createTrackbar("Hm", "Controls", &hm, 255, update);
+	//createTrackbar("Sm", "Controls", &sm, 255, update);
+	//createTrackbar("Vm", "Controls", &vm, 255, update);
 
-	createTrackbar("Clip", "Controls", &clip_limit, 100);
-	createTrackbar("Tile", "Controls", &tile_grid_size, 100);
+	//createTrackbar("Clip", "Controls", &clip_limit, 100);
+	//createTrackbar("Tile", "Controls", &tile_grid_size, 100);
 
 	createTrackbar("B", "Controls", &b, 100);
 	createTrackbar("C", "Controls", &c, 100);
@@ -68,7 +68,7 @@ int main()
 	int prev_offset = 0;
 	int direction = 0;
 	int frame_count = 0;
-	int lane_width = 0;
+	int lane_width = 200;
 
 	while (1)
 	{
@@ -84,16 +84,19 @@ int main()
 		
 		Mat colorMask = Mat(frame.rows, frame.cols, CV_8UC1, Scalar(0));
 		cvtColor(frame, colorMask, COLOR_BGR2GRAY);
-		
+
 		//Bird eye transformation
 		colorMask = bird_eye(colorMask, fr, bc, false);
 		resize(colorMask, colorMask, Size(colorMask.cols / 5, colorMask.rows / 5));
+		
 		Mat original;
 		resize(frame, original, Size(colorMask.cols, colorMask.cols * frame.rows / frame.cols));
 
-		GaussianBlur(colorMask, colorMask, Size(3, 3), 20);
-		Canny(colorMask, colorMask, 0, 40);
-		colorMask = colorMask(Range(colorMask.rows * 0.8 , colorMask.rows - 40), Range::all());
+		GaussianBlur(colorMask, colorMask, Size(3, 3), 30);
+		Canny(colorMask, colorMask, b, c);
+		imshow("Edge", colorMask);
+
+		colorMask = colorMask(Range(colorMask.rows * 0.8, colorMask.rows - 40), Range::all());
 		floodFill(colorMask, Point(colorMask.cols / 2 + prev_offset, colorMask.rows - 5), 150);
 		inRange(colorMask, { 149 }, { 151 }, colorMask);
 
@@ -146,76 +149,94 @@ int main()
 
 		double angl = 1.57;
 		double angr = 1.57;
-		
+		bool left_lane = true, right_lane = true;
+
 		if ((pl1.x - pl2.x) != 0)
 			angl = atan(((double)(pl2.y - pl1.y) / (double)(pl2.x - pl1.x)));
+		else if (pl1.x < 2)
+			left_lane = false;
 
 		if ((pr1.x - pr2.x) != 0)
 			angr = atan(((double)(pr2.y - pr1.y) / (double)(pr2.x - pr1.x)));
+		else if (pr1.x < 2)
+			right_lane = false;
 
-		if (abs(angl) > abs(angr) && angl > 0)
-			direction = -1;
-		else if ( angr > 0)
+		if (left_lane && !right_lane && abs(angl) < 1.52)
 			direction = 1;
+		else if (!left_lane && right_lane && abs(angr) < 1.52)
+			direction = -1;
+		else if (left_lane && right_lane && abs(angr) < 1.52 && abs(angl) < 1.52)
+		{
+			if (angl > 0 && angr < 0)
+				direction = -1;
+			else if (angl < 0 && angr > 0)
+				direction = 1;
+			else
+				direction = 0;
+		}
 		else
 			direction = 0;
 
+		if (playback)
+			cout << direction << " - " << left_lane << " & " << right_lane << endl;
+
 		prev_offset = 50 * direction;
 
-		//if (playback)
-		//	cout << (direction == 0 ? "forward" : direction == -1 ? "left" : "right") << "  " << (direction == 0 ? 90 : (direction == -1 ? 180 * angr / 3.14 : 180 * angl / 3.14)) << endl;
-
-		if (frame_count < 5)
+		int nonzero = 0;
+		if (direction == 0)
 		{
-			int l = 0, r = 0;
-			vector<int> lane;
-			reduce(colorMask, lane, 0, REDUCE_SUM);
-
-			for (l = 0; l < lane.size() / 2; l++)
-				if (lane[l] > 0)
+			for (nonzero = 0; nonzero < colorMask.cols; nonzero++)
+				if (colorMask.at<unsigned char>(colorMask.rows - 2, nonzero) > 0)
 					break;
-
-			for (int i = lane.size() - 1; i > 0; r++, i --)
-				if (lane[i] > 0)
-					break;
-
-			lane_width += lane.size() - l - r;
-			if (frame_count == 4)
-				lane_width /= frame_count;
+			offset = colorMask.cols / 2 - lane_width / 2 - nonzero;
+			offset *= -1;
+		}
+		else if (direction == 1)
+		{
+			if ((pl1.x - pl2.x) != 0)
+				angr = atan(abs((double)(pl2.y - pl1.y) / (double)(pl2.x - pl1.x)));
+			offset = colorMask.cols / 2 - pl1.x - lane_width / 2 * sin(angr);
+			offset *= -1;
 		}
 		else
 		{
-			int nonzero = 0;
-			if (direction == 0)
-			{
-				for (nonzero = 0; nonzero < colorMask.cols; nonzero++)
-					if (colorMask.at<unsigned char>(colorMask.rows - 2, nonzero) > 0)
-						break;
-				offset = colorMask.cols / 2 - lane_width / 2 - nonzero;
-			}
-			else if (direction == 1)
-			{
-				if ((pl1.x - pl2.x) != 0)
-					angr = atan(abs((double)(pl2.y - pl1.y) / (double)(pl2.x - pl1.x)));
-				offset = colorMask.cols / 2 - pl1.x - lane_width / 2 * sin(angr);
-				offset *= -1;
-			}
-			else
-			{
-				if ((pr1.x - pr2.x) != 0)
-					angl = atan(abs((double)(pr2.y - pr1.y) / (double)(pr2.x - pr1.x)));
-				offset = colorMask.cols / 2 - pr1.x - lane_width / 2 * sin(angl);
-			}
-
-			line(original, Point(original.cols / 2 + offset, original.rows - 5), Point(original.cols / 2, original.rows - 5), 150, 5);
-
-			if (playback)
-				cout << offset << endl;
+			if ((pr1.x - pr2.x) != 0)
+				angl = atan(abs((double)(pr2.y - pr1.y) / (double)(pr2.x - pr1.x)));
+			offset = colorMask.cols / 2 - pr1.x - lane_width / 2 * sin(angl);
 		}
 
-		imshow("R", original);
+		line(original, Point(original.cols / 2 + offset, original.rows - 5), Point(original.cols / 2, original.rows - 5), 150, 5);
+		//line(colorMask, Point(colorMask.cols / 2 + offset, colorMask.rows - 5), Point(colorMask.cols / 2, colorMask.rows - 5), 150, 5);
 
-		if (waitKey(150) == 'p')
+		//if (playback)
+			//cout << offset << endl;
+
+		//if (frame_count < 5)
+		//{
+		//	//int l = 0, r = 0;
+		//	//vector<int> lane;
+		//	//reduce(colorMask, lane, 0, REDUCE_SUM);
+		//	//for (l = 0; l < lane.size() / 2; l++)
+		//	//	if (lane[l] > 0)
+		//	//		break;
+		//	//for (int i = lane.size() - 1; i > 0; r++, i--)
+		//	//	if (lane[i] > 0)
+		//	//		break;
+		//	//lane_width += lane.size() - l - r;
+		//	//if (frame_count == 4)
+		//	//	lane_width /= frame_count;
+		//	//cout << lane_width << endl;
+		//}
+		//else
+		//{
+		//}
+
+		//cvtColor(original, original, COLOR_BGR2GRAY);
+		imshow("org", colorMask);
+		//imshow("org", original);
+
+		//cout << pid.TotalError() << "\t\t" << direction  << "\t\tL: " << angl << "\t\tR: " << angr << endl;
+		if (waitKey(100) == 'p')
 			playback = !playback;
 	}
 	std::cout << "finished" << endl;

@@ -6,11 +6,11 @@
 
 using namespace cv;
 
-Mat bird_eye(cv::Mat img, cv::Mat forw_mat, cv::Mat backw_mat, bool verbose)
+Mat bird_eye(cv::Mat img, cv::Mat forw_mat, cv::Mat backw_mat, int scale, int out, bool verbose)
 {
     int width, height;
 
-	float w_out = 200;
+	float w_out = out / scale;
 	float bhratio = 1;
 	float thratio = 0.470;
 	float wtratio = 0.3;
