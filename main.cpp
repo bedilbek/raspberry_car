@@ -159,7 +159,7 @@ void mode_joystick()
 		s->receive(message, 1024);
 		speed = (int)message[0] == 0 ? ((int)message[1]) * -1 : (int) message[1];
 		steering = (int)message[2] == 0 ? ((int)message[3]) : (int) message[3] * -1;
-		controller.turn(steering, speed);
+		controller.move(steering, speed);
 		if (debugging)
             cout <<"::::" << message << "::::" << "speed: " << speed << " steering: " << steering <<  endl;
 		delay(20);

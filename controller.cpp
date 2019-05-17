@@ -28,48 +28,55 @@ void Controller::init_dc_motor() {
     softPwmCreate(IN4_PIN, 0, 100);
 }
 
-void Controller::move(int steering,int speed) {
-    int left,right;
-    if(speed == 0)
+void Controller::turn(int steering, int speed) {
+    int left, right;
+    if (speed == 0)
         stop();
-    else if(speed>0){
+    else if (speed > 0) {
         //forward
-        if(steering>0){
+        if (steering > 0) {
             left = speed - steering;
             right = speed;
-        }else{
+        } else {
             steering = -steering;
             left = speed;
             right = speed - steering;
         }
-        forward(left,right);
-    } else{
+        forward(left, right);
+    } else {
         //backward
-        speed =-speed;
-        if(steering>0){
-            left = speed -steering;
+        speed = -speed;
+        if (steering > 0) {
+            left = speed - steering;
             right = speed;
-        }else{
+        } else {
             steering = -steering;
             left = speed;
             right = speed - steering;
         }
-        backward(left,right);
+        backward(left, right);
     }
 }
 
-void Controller::forward(int left,int right) {
+void Controller::forward(int left, int right) {
     softPwmWrite(IN1_PIN, left);
     softPwmWrite(IN2_PIN, MIN_SPEED);
     softPwmWrite(IN3_PIN, right);
     softPwmWrite(IN4_PIN, MIN_SPEED);
 }
 
-void Controller::backward(int left,int right) {
+void Controller::backward(int left, int right) {
     softPwmWrite(IN1_PIN, MIN_SPEED);
     softPwmWrite(IN2_PIN, left);
     softPwmWrite(IN3_PIN, MIN_SPEED);
     softPwmWrite(IN4_PIN, right);
+}
+
+void Controller::forward(int speed) {
+    softPwmWrite(IN1_PIN, speed);
+    softPwmWrite(IN2_PIN, MIN_SPEED);
+    softPwmWrite(IN3_PIN, speed);
+    softPwmWrite(IN4_PIN, MIN_SPEED);
 }
 
 void Controller::left(int speed) {
@@ -93,4 +100,24 @@ void Controller::stop() {
     softPwmWrite(IN4_PIN, LOW);
 
     init_dc_motor();
+}
+
+void Controller::turnRight90Gradus(int speed) {
+    right(speed);
+    delay(500);
+}
+
+void Controller::turnLeft90Gradus(int speed) {
+    left(speed);
+    delay(500);
+}
+
+void Controller::moveUntilItDetectsYellow(int speed, IRLineDetector irLineDetector) {
+    forward(speed);
+    delay(500);
+    while (true) {
+        if (irLineDetector.right_detected() == 1 || irLineDetector.left_detected()) {
+            break;
+        }
+    }
 }

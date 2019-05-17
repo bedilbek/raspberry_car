@@ -16,12 +16,28 @@ void IRLineDetector::init() {
 }
 
 bool IRLineDetector::left_detected() {
-//    std::cout << "LEFT LINE:" << digitalRead(IR_LINE_LEFT) << std::endl;
+//    std::cout << "L=" << digitalRead(IR_LINE_LEFT);
     return static_cast<bool>(digitalRead(IR_LINE_LEFT));
 }
 
 bool IRLineDetector::right_detected() {
-//    std::cout << "RIGHT LINE:" << digitalRead(IR_LINE_RIGHT) << std::endl;
+//    std::cout << " R=" << digitalRead(IR_LINE_RIGHT) << std::endl;
     return static_cast<bool>(digitalRead(IR_LINE_RIGHT));
 }
+
+bool IRLineDetector::isLeftOnBlack(){
+    //if left line is black
+    if(digitalRead(IR_LINE_LEFT) == HIGH){
+        return true;
+    }
+    return false;
+}
+bool IRLineDetector::isRightOnBlack(){
+    //if right line is black
+    if(digitalRead(IR_LINE_RIGHT) == HIGH){
+        return true;
+    }
+    return false;
+}
+
 

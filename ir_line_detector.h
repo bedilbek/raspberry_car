@@ -16,6 +16,8 @@ public:
     IRLineDetector();
     bool right_detected();
     bool left_detected();
+    bool isLeftOnBlack();
+    bool isRightOnBlack();
 
 private:
     void init();
