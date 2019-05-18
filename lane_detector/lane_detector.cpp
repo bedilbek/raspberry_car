@@ -16,8 +16,8 @@ int center = 117;
 int clip_limit = 2;
 int tile_grid_size = 8;
 
-int b = 80;
-int c = 0;
+int b = 50;
+int c = 100;
 
 Scalar min_th = { 18, 52, 102 };
 Scalar max_th = { 255, 255, 255 };
@@ -47,8 +47,8 @@ int main()
 	
 
 	namedWindow("Controls", WINDOW_GUI_NORMAL);
-	//createTrackbar("H", "Controls", &h, 255, update);
-	//createTrackbar("S", "Controls", &s, 255, update);
+	createTrackbar("H", "Controls", &h, 255, update);
+	createTrackbar("S", "Controls", &s, 255, update);
 	//createTrackbar("V", "Controls", &v, 255, update);
 
 	//createTrackbar("Hm", "Controls", &hm, 255, update);
@@ -58,17 +58,17 @@ int main()
 	//createTrackbar("Clip", "Controls", &clip_limit, 100);
 	//createTrackbar("Tile", "Controls", &tile_grid_size, 100);
 
-	createTrackbar("B", "Controls", &b, 100);
-	createTrackbar("C", "Controls", &c, 100);
+	//createTrackbar("B", "Controls", &b, 100);
+	//createTrackbar("C", "Controls", &c, 100);
 
-	VideoCapture video("output.avi");
+	VideoCapture video("output.mp4");
 	
 	
 	int offset = 0;
 	int prev_offset = 0;
 	int direction = 0;
 	int frame_count = 0;
-	int lane_width = 200;
+	int lane_width = 165;
 
 	while (1)
 	{
@@ -81,22 +81,61 @@ int main()
 		}
 
 		frame_count++;
-		
-		Mat colorMask = Mat(frame.rows, frame.cols, CV_8UC1, Scalar(0));
-		cvtColor(frame, colorMask, COLOR_BGR2GRAY);
 
+
+		Mat colorMask = frame;//Mat(frame.rows, frame.cols, CV_8UC1, Scalar(0));
+
+		resize(colorMask, colorMask, Size(colorMask.cols / 3, colorMask.rows / 3));
+		
+		
 		//Bird eye transformation
-		colorMask = bird_eye(colorMask, fr, bc, false);
-		resize(colorMask, colorMask, Size(colorMask.cols / 5, colorMask.rows / 5));
+		colorMask = bird_eye(colorMask, fr, bc, 3, 50);
+
+		cvtColor(colorMask, colorMask, COLOR_BGR2GRAY);
+		Mat white_mask;
+		inRange(colorMask,  Scalar(185), Scalar(255), white_mask);
+		//imshow("white", white_mask);
 		
-		Mat original;
-		resize(frame, original, Size(colorMask.cols, colorMask.cols * frame.rows / frame.cols));
-
-		GaussianBlur(colorMask, colorMask, Size(3, 3), 30);
+		GaussianBlur(colorMask, colorMask, Size(3, 3), tile_grid_size);
 		Canny(colorMask, colorMask, b, c);
-		imshow("Edge", colorMask);
+		colorMask = colorMask(Range(colorMask.rows * 0.8, colorMask.rows - 20), Range::all());
+		white_mask = white_mask(Range(white_mask.rows * 0.8, white_mask.rows - 20), Range::all());
+		imshow("white", white_mask);
 
-		colorMask = colorMask(Range(colorMask.rows * 0.8, colorMask.rows - 40), Range::all());
+		int resize_factor = 3;
+		resize(white_mask, white_mask, Size(white_mask.cols / resize_factor, white_mask.rows/ resize_factor));
+		int h_segment = 3, w_segment = 4;
+		for (int i = 0; i < h_segment; i++)
+		{
+			for (int j = 0; j < w_segment; j++)
+			{
+				int seg_x1 = j * white_mask.cols / w_segment;
+				int seg_x2 = (j + 1) * white_mask.cols / w_segment;
+				int seg_y1 = i * white_mask.rows / h_segment;
+				int seg_y2 = (i + 1 ) * white_mask.rows / h_segment;
+
+				Mat white_area = white_mask(Range(seg_y1, seg_y2), Range(seg_x1, seg_x2));
+				Mat nonzero;
+				findNonZero(white_area, nonzero);
+				if ((double)nonzero.rows / (double)(white_mask.cols / w_segment * white_mask.cols / w_segment) > 0.0)
+				{
+					vector<double> line_params;
+					fitLine(nonzero, line_params, CV_DIST_HUBER, 0, 0.01, 0.01);
+					Point p1, p2;
+
+					p1 = Point((seg_x1 + 1000 * line_params[0] + line_params[2]) * resize_factor, (seg_y1 + 100 * line_params[1] + line_params[3]) * 3);
+					p2 = Point((seg_x1 + -1000 * line_params[0] + line_params[2]) * resize_factor, (seg_y1 + -100 * line_params[1] + line_params[3]) * 3);
+
+					//line(colorMask, p1, p2, 150, 10);
+					//rectangle(white_mask, Point(seg_x1, seg_y1), Point(seg_x2, seg_y2), 180);
+				}
+				//imshow("s", white_area);
+				//waitKey(500);
+			}
+		}
+		imshow("seg", colorMask);
+
+		
 		floodFill(colorMask, Point(colorMask.cols / 2 + prev_offset, colorMask.rows - 5), 150);
 		inRange(colorMask, { 149 }, { 151 }, colorMask);
 
@@ -177,19 +216,25 @@ int main()
 		else
 			direction = 0;
 
-		if (playback)
-			cout << direction << " - " << left_lane << " & " << right_lane << endl;
+		//if (playback)
+		//	cout << direction << " - " << left_lane << " & " << right_lane << endl;
 
-		prev_offset = 50 * direction;
+		prev_offset = 80 * direction;
 
 		int nonzero = 0;
 		if (direction == 0)
 		{
-			for (nonzero = 0; nonzero < colorMask.cols; nonzero++)
-				if (colorMask.at<unsigned char>(colorMask.rows - 2, nonzero) > 0)
-					break;
-			offset = colorMask.cols / 2 - lane_width / 2 - nonzero;
-			offset *= -1;
+			if (left_lane || right_lane)
+			{
+				for (nonzero = 0; nonzero < colorMask.cols; nonzero++)
+					if (colorMask.at<unsigned char>(colorMask.rows - 2, nonzero) > 0)
+						break;
+				offset = lane_width / 2 + nonzero - colorMask.cols / 2;
+			}
+			else
+			{
+				offset = 0;
+			}
 		}
 		else if (direction == 1)
 		{
@@ -205,38 +250,11 @@ int main()
 			offset = colorMask.cols / 2 - pr1.x - lane_width / 2 * sin(angl);
 		}
 
-		line(original, Point(original.cols / 2 + offset, original.rows - 5), Point(original.cols / 2, original.rows - 5), 150, 5);
-		//line(colorMask, Point(colorMask.cols / 2 + offset, colorMask.rows - 5), Point(colorMask.cols / 2, colorMask.rows - 5), 150, 5);
+		//line(original, Point(original.cols / 2 + offset, original.rows - 5), Point(original.cols / 2, original.rows - 5), 150, 5);
+		line(colorMask, Point(colorMask.cols / 2 + offset, colorMask.rows - 5), Point(colorMask.cols / 2, colorMask.rows - 5), 150, 5);
+		imshow("img", colorMask);
 
-		//if (playback)
-			//cout << offset << endl;
-
-		//if (frame_count < 5)
-		//{
-		//	//int l = 0, r = 0;
-		//	//vector<int> lane;
-		//	//reduce(colorMask, lane, 0, REDUCE_SUM);
-		//	//for (l = 0; l < lane.size() / 2; l++)
-		//	//	if (lane[l] > 0)
-		//	//		break;
-		//	//for (int i = lane.size() - 1; i > 0; r++, i--)
-		//	//	if (lane[i] > 0)
-		//	//		break;
-		//	//lane_width += lane.size() - l - r;
-		//	//if (frame_count == 4)
-		//	//	lane_width /= frame_count;
-		//	//cout << lane_width << endl;
-		//}
-		//else
-		//{
-		//}
-
-		//cvtColor(original, original, COLOR_BGR2GRAY);
-		imshow("org", colorMask);
-		//imshow("org", original);
-
-		//cout << pid.TotalError() << "\t\t" << direction  << "\t\tL: " << angl << "\t\tR: " << angr << endl;
-		if (waitKey(100) == 'p')
+		if (waitKey(5) == 'p')
 			playback = !playback;
 	}
 	std::cout << "finished" << endl;

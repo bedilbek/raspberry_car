@@ -128,13 +128,12 @@ int main(int argc, char* argv[])
 		colorMask = bird_eye(colorMask, fr, bc, 3, 50);
 		
 		
-		//Mat original;
-		//resize(frame, original, Size(colorMask.cols, colorMask.cols * frame.rows / frame.cols));
-		//imshow("o", original);
+
 
 		GaussianBlur(colorMask, colorMask, Size(3, 3), tile_grid_size);
 		Canny(colorMask, colorMask, b, c);
-		//imshow("edge", colorMask);
+		imshow("edge", colorMask);
+
 		colorMask = colorMask(Range(colorMask.rows * 0.8, colorMask.rows - 20), Range::all());
 		floodFill(colorMask, Point(colorMask.cols / 2 + prev_offset, colorMask.rows - 5), 150);
 		inRange(colorMask, { 149 }, { 151 }, colorMask);
@@ -276,9 +275,14 @@ int main(int argc, char* argv[])
 		//cvtColor(original, original, COLOR_BGR2GRAY);
 		//imshow("org", colorMask);
 		//imshow("org", original);
-		pid.UpdateError(offset);
-		cout << setw(0) << pid.TotalError() << setw(15) << direction  << setw(15) << "L: " << angl << setw(15) << "R: " << angr << endl;
-		controller.turn(pid.TotalError(), speed);
+
+
+		imshow("img", colorMask);
+
+		//pid.UpdateError(offset);
+		//cout << setw(0) << pid.TotalError() << setw(15) << direction  << setw(15) << "L: " << angl << setw(15) << "R: " << angr << endl;
+		//controller.turn(pid.TotalError(), speed);
+
 		if (waitKey(5) == 'p')
 			playback = !playback;
 		//cout << 1000 / (millis() - start) << endl;

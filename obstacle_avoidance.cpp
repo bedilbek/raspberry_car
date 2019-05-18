@@ -6,10 +6,7 @@
 #include <ctime>
 #include "ir_line_detector.h"
 #include <wiringPi.h>
-
-//
-// Created by Sardor on 2019-05-08.
-//
+#include <vector>
 
 using namespace std;
 IRWallDetector wallDetector;
