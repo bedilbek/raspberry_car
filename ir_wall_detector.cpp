@@ -10,7 +10,7 @@
 // when there is no obstacle receives 1
 
 IRWallDetector::IRWallDetector(){
-    init();
+
 }
 
 void IRWallDetector::init() {

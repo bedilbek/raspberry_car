@@ -7,7 +7,6 @@
 #include <iostream>
 
 IRLineDetector::IRLineDetector(){
-    init();
 }
 
 void IRLineDetector::init() {

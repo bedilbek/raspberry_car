@@ -13,8 +13,6 @@ public:
     IRWallDetector();
     bool right_detected();
     bool left_detected();
-
-private:
     void init();
 };
 
