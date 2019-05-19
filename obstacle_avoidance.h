@@ -27,8 +27,6 @@ bool moveUntilObstacleOrBlack();
 
 void runIR();
 
-void runParking(bool isleft);
-
 int avoid_obstacle(Controller controller, Sonar sonar, IRLineDetector lineDetector, IRWallDetector wallDetector);
 
 #endif // !OBSTC
