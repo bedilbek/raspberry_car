@@ -17,9 +17,9 @@ enum Turn
 	RIGHT
 };
 
-void turn(Turn turn, int sec);
+bool turn(Turn turn);
 
-void moveUntilObstacle();
+void moveUntilObstacle(int limit);
 
 void moveUntilBlack();
 
@@ -28,6 +28,7 @@ bool moveUntilObstacleOrBlack();
 void runIR();
 
 void runParking(bool isleft);
+
 int avoid_obstacle(Controller controller, Sonar sonar, IRLineDetector lineDetector, IRWallDetector wallDetector);
 
 #endif // !OBSTC
