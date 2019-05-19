@@ -102,9 +102,9 @@ int main()
 		white_mask = white_mask(Range(white_mask.rows * 0.8, white_mask.rows - 20), Range::all());
 		imshow("white", white_mask);
 
-		int resize_factor = 3;
+		int resize_factor = 1;
 		resize(white_mask, white_mask, Size(white_mask.cols / resize_factor, white_mask.rows/ resize_factor));
-		int h_segment = 3, w_segment = 4;
+		int h_segment = 10, w_segment = 20;
 		for (int i = 0; i < h_segment; i++)
 		{
 			for (int j = 0; j < w_segment; j++)
@@ -127,13 +127,13 @@ int main()
 					p2 = Point((seg_x1 + -1000 * line_params[0] + line_params[2]) * resize_factor, (seg_y1 + -100 * line_params[1] + line_params[3]) * 3);
 
 					//line(colorMask, p1, p2, 150, 10);
-					//rectangle(white_mask, Point(seg_x1, seg_y1), Point(seg_x2, seg_y2), 180);
+					rectangle(white_mask, Point(seg_x1, seg_y1), Point(seg_x2, seg_y2), 180);
 				}
 				//imshow("s", white_area);
 				//waitKey(500);
 			}
 		}
-		imshow("seg", colorMask);
+		imshow("seg", white_mask);
 
 		
 		floodFill(colorMask, Point(colorMask.cols / 2 + prev_offset, colorMask.rows - 5), 150);

@@ -10,6 +10,14 @@
 #include "./lane_detector/bird_eye.h"
 #include <raspicam/raspicam_cv.h>
 #include "./PID.h"
+#include "./obstacle_avoidance.h"
+#include <pthread.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 using namespace std;
 using namespace cv;
@@ -24,14 +32,118 @@ int tile_grid_size = 8;
 
 int b = 50;
 int c = 100;
-
+double dis = 400;
+bool ready_to_send = true;
+Sonar sonar;
 Scalar min_th = { 18, 52, 102 };
 Scalar max_th = { 255, 255, 255 };
+
+Mat frame;
+Mat frame_to_send;
+bool is_sending = false;
 
 void update(int, void*)
 {
 	min_th = Scalar(h, s, v);
 	max_th = Scalar(hm, sm, vm);
+}
+
+void* update_sonar(void* params)
+{
+	while (true)
+	{
+		dis = sonar.distance(500);
+	}
+}
+
+void* sign_detection(void* params)
+{
+	cout << "Starting to create socket" << endl;
+	int sockfd, portno, n;
+	struct sockaddr_in serv_addr;
+	struct hostent *server;
+
+	char buffer[256];
+	portno = 8059;
+	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sockfd < 0)
+		cout << "ERROR opening socket" << endl;
+
+	cout << "getting host" << endl;
+	cout << "Host Got" << endl;
+
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_port = htons(portno);
+	serv_addr.sin_addr.s_addr = INADDR_ANY;
+
+	if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
+		cout << "ERROR connecting" << endl;
+
+	Point lp1 = Point(392, 82);
+	Point lp2 = Point(542, 332);
+
+	Point rp1 = Point(76, 62);
+	Point rp2 = Point(226, 312);
+
+	Point tp1 = Point(216, 19);
+	Point tp2 = Point(366, 269);
+	cout << "Socket created" << endl;
+	socklen_t addr_len = sizeof(serv_addr);
+	while (1)
+	{
+		delay(5);
+		//cout << frame.empty() << endl;
+		if (!frame.empty())
+		{
+			cout << "Starting" << endl;
+			char buffer[100];
+			int n, len;
+
+			frame.convertTo(frame_to_send, CV_8UC3);
+
+			is_sending = true;
+			Mat left;
+			frame_to_send(Rect(lp1.x, lp1.y, 150, 250)).copyTo(left);
+
+			Mat right;
+			frame_to_send(Rect(rp1.x, rp1.y, 150, 250)).copyTo(right);
+
+			Mat top;
+			frame_to_send(Rect(tp1.x, tp1.y, 150, 250)).copyTo(top);
+			is_sending = false;
+
+			resize(left, left, Size(55, 100));
+			resize(right, right, Size(55, 100));
+			resize(top, top, Size(55, 100));
+
+			vector<unsigned char> left_vect;
+			vector<unsigned char> right_vect;
+			vector<unsigned char> top_vect;
+
+			left_vect.assign(left.datastart, left.dataend);
+			right_vect.assign(right.datastart, right.dataend);
+			top_vect.assign(top.datastart, top.dataend);
+
+			vector<unsigned char> data;
+			copy(left_vect.begin(), left_vect.end(), back_inserter(data));
+			copy(right_vect.begin(), right_vect.end(), back_inserter(data));
+			copy(top_vect.begin(), top_vect.end(), back_inserter(data));
+
+			cout << "Sending frame: " << data.size() << endl;
+			//sendto(sockfd, data.data(), 10000, MSG_CONFIRM, (const struct sockaddr *) &serv_addr, sizeof(serv_addr));
+			sendto(sockfd, data.data(), data.size(), MSG_CONFIRM, (const struct sockaddr *) &serv_addr, sizeof(serv_addr));
+			cout << "Waiting to receive" << endl;
+			n = recvfrom(sockfd, buffer, 100, MSG_WAITALL, (struct sockaddr *) &serv_addr, &addr_len);
+			cout << "Detected: " << (int)buffer[0] << endl;
+		}
+	}
+	close(sockfd);
+}
+
+void error(const char *msg)
+{
+	perror(msg);
+	exit(0);
 }
 
 double minth = 0;
@@ -43,7 +155,7 @@ int main(int argc, char* argv[])
 
 	int roi = 20;
 	bool playback = true;
-	Mat frame, mask;
+	Mat mask;
 	Mat fr, bc;
 	int indxl = -1, indxr = -1;
 	int pindxl = -1, pindxr = -1;
@@ -52,6 +164,20 @@ int main(int argc, char* argv[])
 	int threshold = 50;
 	int interval = 3;
 	int pthreshold = 3;
+	sonar.init(24, 25);
+
+
+	IRLineDetector lineDetector;
+	IRWallDetector wallDetector;
+	
+	pthread_t sonar_thread;
+	int sonar_thread_id = pthread_create(&sonar_thread, NULL, update_sonar, NULL);
+
+	//pthread_t socket_thread;
+	//int socket_thread_id = pthread_create(&socket_thread, NULL, sign_detection, NULL);
+
+	lineDetector.init();
+	wallDetector.init();
 
 	//namedWindow("img", WINDOW_GUI_NORMAL);
 	//namedWindow("org", WINDOW_GUI_NORMAL);
@@ -59,18 +185,14 @@ int main(int argc, char* argv[])
 	//createTrackbar("H", "Controls", &h, 255, update);
 	//createTrackbar("S", "Controls", &s, 255, update);
 	//createTrackbar("V", "Controls", &v, 255, update);
-
 	//createTrackbar("Hm", "Controls", &hm, 255, update);
 	//createTrackbar("Sm", "Controls", &sm, 255, update);
 	//createTrackbar("Vm", "Controls", &vm, 255, update);
-
 	//createTrackbar("Clip", "Controls", &clip_limit, 100);
 	//createTrackbar("Tile", "Controls", &tile_grid_size, 100);
-
 	//createTrackbar("B", "Controls", &b, 300);
 	//createTrackbar("C", "Controls", &c, 300);
 	
-	//VideoCapture video("output.avi");
 	RaspiCam_Cv cam;
 	cam.set(CV_CAP_PROP_FRAME_WIDTH, 640);
 	cam.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
@@ -82,7 +204,6 @@ int main(int argc, char* argv[])
 	cam.open();
 	cout << "Opened" << endl;
 
-
 	int offset = 0;
 	int prev_offset = 0;
 	int direction = 0;
@@ -90,11 +211,13 @@ int main(int argc, char* argv[])
 	
 
 	// Set PID gains
-	double k_p = atof(argv[1]);
-	double k_i = atof(argv[2]);
-	double k_d = atof(argv[3]);
-	int speed = atoi(argv[4]);
+	double k_p = 1.5; //atof(argv[1]);
+	double k_i = 0.0; //atof(argv[2]);
+	double k_d = 1.8; //atof(argv[3]);
+	int speed = 60; //atoi(argv[4]);
 	int lane_width = 165;
+	int current_lane = 0;
+	int prev_lane = 0;
 	//createTrackbar("LW", "Controls", &lane_width, 300);
 
 	// Initialize PID controller
@@ -103,36 +226,32 @@ int main(int argc, char* argv[])
 
 	Controller controller;
 	controller.init_dc_motor();
+	bool prev_obs = false;
+	int obs_count = 0;
+	bool current_obs = false;
 
 	while (1)
 	{
-		//int start = millis();
+		//ready_to_send = false;
 		if (playback)
 		{
 			cam.grab();
 			cam.retrieve(frame);
-			//video >> frame;
-			//Yellow Mask
 			if (frame.empty())
 				break;
 		}
-
+		//ready_to_send = true;
+		
 		frame_count++;
-
-
-		Mat colorMask = frame;//Mat(frame.rows, frame.cols, CV_8UC1, Scalar(0));
+		Mat colorMask = frame;
 
 		resize(colorMask, colorMask, Size(colorMask.cols / 3, colorMask.rows / 3));
-		//cvtColor(frame, colorMask, COLOR_BGR2GRAY);
 		//Bird eye transformation
 		colorMask = bird_eye(colorMask, fr, bc, 3, 50);
 		
-		
-
-
 		GaussianBlur(colorMask, colorMask, Size(3, 3), tile_grid_size);
 		Canny(colorMask, colorMask, b, c);
-		imshow("edge", colorMask);
+		//imshow("edge", colorMask);
 
 		colorMask = colorMask(Range(colorMask.rows * 0.8, colorMask.rows - 20), Range::all());
 		floodFill(colorMask, Point(colorMask.cols / 2 + prev_offset, colorMask.rows - 5), 150);
@@ -233,6 +352,7 @@ int main(int argc, char* argv[])
 			else
 			{
 				offset = 0;
+				//avoid_obstacle();
 			}
 		}
 		else if (direction == 1)
@@ -249,43 +369,43 @@ int main(int argc, char* argv[])
 			offset = colorMask.cols / 2 - pr1.x - lane_width / 2 * sin(angl);
 		}
 
+		int turning_delay = 400;
+
+		//if (dis > 30 && !left_lane && !right_lane)
+		//{
+		//	cout << "> 30 " << endl;
+		//	controller.turn(100, 100);
+		//	delay(100);
+		//	controller.stop();
+		//}
+
+		if (dis < 30 && (wallDetector.left_detected() || wallDetector.right_detected()) && obs_count < 1)
+		{
+			cout << "Sonar: " << dis << endl;
+			cout << "Woman" << endl;
+			obs_count++;
+			while ((wallDetector.left_detected() || wallDetector.right_detected()))
+			{
+				controller.stop();
+			}
+		}
+		else if (wallDetector.left_detected() && wallDetector.right_detected() && !left_lane && !right_lane && obs_count >= 1)
+		{
+			cout << "Obstacle Mode" << endl;
+			controller.stop();
+			avoid_obstacle(controller, sonar, lineDetector, wallDetector);
+		}
+		else
+		{
+			pid.UpdateError(offset);
+			controller.turn(pid.TotalError(), speed);
+		}
+
 		//line(original, Point(original.cols / 2 + offset, original.rows - 5), Point(original.cols / 2, original.rows - 5), 150, 5);
-		line(colorMask, Point(colorMask.cols / 2 + offset, colorMask.rows - 5), Point(colorMask.cols / 2, colorMask.rows - 5), 150, 5);
-
-		//if (frame_count < 5)
-		//{
-		//	int l = 0, r = 0;
-		//	vector<int> lane;
-		//	reduce(colorMask, lane, 0, REDUCE_SUM);
-		//	for (l = 0; l < lane.size() / 2; l++)
-		//		if (lane[l] > 0)
-		//			break;
-		//	for (int i = lane.size() - 1; i > 0; r++, i--)
-		//		if (lane[i] > 0)
-		//			break;
-		//	lane_width += lane.size() - l - r;
-		//	if (frame_count == 4)
-		//		lane_width /= frame_count;
-		//	cout << lane_width << endl;
-		//}
-		//else
-		//{
-		//}
-
-		//cvtColor(original, original, COLOR_BGR2GRAY);
-		//imshow("org", colorMask);
-		//imshow("org", original);
-
-
-		imshow("img", colorMask);
-
-		//pid.UpdateError(offset);
-		//cout << setw(0) << pid.TotalError() << setw(15) << direction  << setw(15) << "L: " << angl << setw(15) << "R: " << angr << endl;
-		//controller.turn(pid.TotalError(), speed);
+		//line(colorMask, Point(colorMask.cols / 2 + offset, colorMask.rows - 5), Point(colorMask.cols / 2, colorMask.rows - 5), 150, 5);
 
 		if (waitKey(5) == 'p')
 			playback = !playback;
-		//cout << 1000 / (millis() - start) << endl;
 	}
 	std::cout << "finished" << endl;
 	return 0;
