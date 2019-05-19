@@ -17,7 +17,6 @@ IRLineDetector lineDetector;
 Controller controller;
 Sonar sonar;
 
-
 enum Turn {
     LEFT,
     RIGHT
@@ -29,7 +28,11 @@ void moveUntilObstacle();
 
 void moveUntilBlack();
 
-void runIr();
+bool moveUntilObstacleOrBlack();
+
+void runIR();
+
+void runParking(bool isleft);
 
 int main() {
 
@@ -38,21 +41,25 @@ int main() {
         return -1;
     }
 
+    bool isleft = true;
+
     controller.init_dc_motor();
     lineDetector.init();
     wallDetector.init();
     sonar.init(24, 25);
 
-    moveUntilObstacle();
+    bool result = moveUntilObstacleOrBlack();
 
-    delay(500);
-    //step (2) turn car until wall detects nothing
-    turn(RIGHT, 400);
+    if (!result) {
 
-    delay(500);
+        delay(500);
 
-    moveUntilBlack();
+        turn(RIGHT, 400);
 
+        delay(500);
+
+        moveUntilBlack();
+    }
 
     //---------------------------------
     controller.turn(100, 100);
@@ -84,8 +91,7 @@ int main() {
     moveUntilObstacle();
     turn(RIGHT, 0);
 
-    runIr();
-
+    runIR();
 
     return 0;
 }
@@ -104,7 +110,7 @@ void turn(Turn turn, int sec) {
                 detectorCounter++;
 
             }
-            if (dis > 20 && detectorCounter >= 2 && !currentDetector) {
+            if (dis > 20 && detectorCounter >= 1 && !currentDetector) {
                 controller.stop();
                 delay(sec);
                 break;
@@ -120,7 +126,7 @@ void turn(Turn turn, int sec) {
             if (currentDetector != lastDetector) {
                 detectorCounter++;
             }
-            if (dis > 20 && detectorCounter >= 2 && !currentDetector) {
+            if (dis > 20 && detectorCounter >= 1 && !currentDetector) {
                 controller.stop();
                 break;
             }
@@ -150,7 +156,7 @@ void moveUntilBlack() {
     }
 }
 
-void runIr() {
+void runIR() {
     controller.forward(70);
     while (true) {
         if (lineDetector.right_detected()) {
@@ -169,8 +175,87 @@ void runIr() {
                     break;
                 }
             }
+        } else if (lineDetector.left_detected() && lineDetector.right_detected()) {
+            break;
         } else {
             controller.forward(70);
         }
     }
+    controller.stop();
+
+    controller.forward(70);
+    while (true) {
+        if (lineDetector.right_detected()) {
+            controller.turn(100, 100);
+            while (true) {
+                if (!lineDetector.right_detected()) {
+                    controller.stop();
+                    break;
+                }
+            }
+        } else if (lineDetector.left_detected()) {
+            controller.turn(-100, 100);
+            while (true) {
+                if (!lineDetector.left_detected()) {
+                    controller.stop();
+                    break;
+                }
+            }
+        } else if (lineDetector.left_detected() && lineDetector.right_detected()) {
+            controller.stop();
+            break;
+        } else {
+            controller.forward(70);
+        }
+    }
+}
+
+void runParking(bool isleft) {
+    controller.forward(60);
+    delay(200);
+
+    if (isleft) {
+        controller.left(80);
+    } else {
+        controller.right(80);
+    }
+
+    int start = millis();
+    while (true) {
+        int end = millis();
+        int diff = end - start;
+        controller.stop();
+        if (isleft && lineDetector.left_detected() && !lineDetector.right_detected()) {
+            controller.forward(60);
+        } else if (!isleft && lineDetector.right_detected() && !lineDetector.left_detected()) {
+            controller.forward(60);
+        } else if (!isleft && !lineDetector.right_detected() && !lineDetector.left_detected()) {
+            controller.right(60);
+        } else if (isleft && !lineDetector.right_detected() && !lineDetector.left_detected()) {
+            controller.left(60);
+        } else if (diff > 3000) {
+            break;
+        }
+    }
+    controller.stop();
+
+}
+
+
+bool moveUntilObstacleOrBlack() {
+    bool isAfterBlack = false;
+    controller.forward(70);
+    while (true) {
+        double dis = sonar.distance(30000);
+        if (dis < 15 || wallDetector.right_detected() || wallDetector.left_detected()) {
+            controller.stop();
+            break;
+        }
+        if (lineDetector.right_detected()) {
+            isAfterBlack = true;
+            controller.stop();
+            break;
+        }
+    }
+    return isAfterBlack;
 }
