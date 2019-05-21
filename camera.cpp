@@ -38,7 +38,7 @@ int main() {
         camera.retrieve(image);
 //        cout << "rows: " << image.rows << endl << "cols: " << image.cols << endl;
         cv::imshow("hello", image);
-
+		
         char c = (char) cv::waitKey(1);
         if (c == 27) break;
     }

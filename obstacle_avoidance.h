@@ -17,15 +17,14 @@ enum Turn
 	RIGHT
 };
 
-bool turn(Turn turn);
+bool turn_a(Turn turn);
 
-void moveUntilObstacle(int limit);
+void moveUntilObstacle(int t);
 
 void moveUntilBlack();
 
 bool moveUntilObstacleOrBlack();
-
-void runIR();
+void runParking();
 
 int avoid_obstacle(Controller controller, Sonar sonar, IRLineDetector lineDetector, IRWallDetector wallDetector);
 
