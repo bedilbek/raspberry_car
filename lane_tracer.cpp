@@ -106,90 +106,89 @@ void* resume_speed(void* params)
 	delay(3000);
 	speed = 80;
 }
-//
-//void* sign_detection(void* params)
-//{
-//	cout << "Starting to create socket" << endl;
-//	int sockfd, portno, n;
-//	struct sockaddr_in serv_addr;
-//	struct hostent *server;
-//
-//	char buffer[256];
-//	portno = 8059;
-//	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-//	if (sockfd < 0)
-//		cout << "ERROR opening socket" << endl;
-//
-//	cout << "getting host" << endl;
-//	cout << "Host Got" << endl;
-//
-//	serv_addr.sin_family = AF_INET;
-//	serv_addr.sin_port = htons(portno);
-//	serv_addr.sin_addr.s_addr = INADDR_ANY;
-//
-//	if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
-//		cout << "ERROR connecting" << endl;
-//
-//	Point lp1 = Point(392, h);
-//	Point lp2 = Point(542, 332);
-//
-//	Point rp1 = Point(76, s);
-//	Point rp2 = Point(226, 312);
-//
-//	Point tp1 = Point(216, v);
-//	Point tp2 = Point(366, 269);
-//	cout << "Socket created" << endl;
-//	socklen_t addr_len = sizeof(serv_addr);
-//	while (1)
-//	{
-//		delay(5);
-//		cout << frame.empty() << endl;
-//		if (!frame.empty())
-//		{
-//			cout << "Starting" << endl;
-//			char buffer[100];
-//			int n, len;
-//
-//			frame.convertTo(frame_to_send, CV_8UC3);
-//
-//			is_sending = true;
-//			
-//			frame_to_send(Rect(lp1.x, lp1.y, 150, 250)).copyTo(left_frame);
-//
-//			
-//			frame_to_send(Rect(rp1.x, rp1.y, 150, 250)).copyTo(right_frame);
-//
-//			
-//			frame_to_send(Rect(tp1.x, tp1.y, 150, 250)).copyTo(top_frame);
-//			
-//
-//			resize(left_frame, left_frame, Size(55, 100));
-//			resize(right_frame, right_frame, Size(55, 100));
-//			resize(top_frame, top_frame, Size(55, 100));
-//			is_sending = false;
-//			vector<unsigned char> left_vect;
-//			vector<unsigned char> right_vect;
-//			vector<unsigned char> top_vect;
-//
-//			left_vect.assign(left_frame.datastart, left_frame.dataend);
-//			right_vect.assign(right_frame.datastart, right_frame.dataend);
-//			top_vect.assign(top_frame.datastart, top_frame.dataend);
-//
-//			vector<unsigned char> data;
-//			copy(left_vect.begin(), left_vect.end(), back_inserter(data));
-//			copy(right_vect.begin(), right_vect.end(), back_inserter(data));
-//			copy(top_vect.begin(), top_vect.end(), back_inserter(data));
-//
-//			cout << "Sending frame: " << data.size() << endl;
-//			sendto(sockfd, data.data(), 10000, MSG_<< "L: " << (int)buffer[0] <<CONFIRM, (const struct sockaddr *) &serv_addr, sizeof(serv_addr));
-//			sendto(sockfd, data.data(), data.size(), MSG_CONFIRM, (const struct sockaddr *) &serv_addr, sizeof(serv_addr));
-//			cout << "Waiting to receive" << endl;
-//			n = recvfrom(sockfd, buffer, 100, MSG_WAITALL, (struct sockaddr *) &serv_addr, &addr_len);
-//			cout << "L: " << buffer[0] << " R: " << buffer[1] << " T: " << buffer[2] << endl;
-//		}
-//	}
-//	close(sockfd);
-//}
+
+void* sign_detection(void* params)
+{
+	cout << "Starting to create socket" << endl;
+	int sockfd, portno, n;
+	struct sockaddr_in serv_addr;
+	struct hostent *server;
+
+	char buffer[256];
+	portno = 8059;
+	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sockfd < 0)
+		cout << "ERROR opening socket" << endl;
+
+	cout << "getting host" << endl;
+	cout << "Host Got" << endl;
+
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_port = htons(portno);
+	serv_addr.sin_addr.s_addr = INADDR_ANY;
+
+	if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
+		cout << "ERROR connecting" << endl;
+
+	Point lp1 = Point(392, h);
+	Point lp2 = Point(542, 332);
+
+	Point rp1 = Point(76, s);
+	Point rp2 = Point(226, 312);
+
+	Point tp1 = Point(216, v);
+	Point tp2 = Point(366, 269);
+	cout << "Socket created" << endl;
+	socklen_t addr_len = sizeof(serv_addr);
+	while (1)
+	{
+		delay(5);
+		cout << frame.empty() << endl;
+		if (!frame.empty())
+		{
+			cout << "Starting" << endl;
+			char buffer[100];
+			int n, len;
+
+			frame.convertTo(frame_to_send, CV_8UC3);
+
+			is_sending = true;
+			
+			frame_to_send(Rect(lp1.x, lp1.y, 150, 250)).copyTo(left_frame);
+
+			
+			frame_to_send(Rect(rp1.x, rp1.y, 150, 250)).copyTo(right_frame);
+
+			
+			frame_to_send(Rect(tp1.x, tp1.y, 150, 250)).copyTo(top_frame);
+			
+
+			resize(left_frame, left_frame, Size(55, 100));
+			resize(right_frame, right_frame, Size(55, 100));
+			resize(top_frame, top_frame, Size(55, 100));
+			is_sending = false;
+			vector<unsigned char> left_vect;
+			vector<unsigned char> right_vect;
+			vector<unsigned char> top_vect;
+
+			left_vect.assign(left_frame.datastart, left_frame.dataend);
+			right_vect.assign(right_frame.datastart, right_frame.dataend);
+			top_vect.assign(top_frame.datastart, top_frame.dataend);
+
+			vector<unsigned char> data;
+			copy(left_vect.begin(), left_vect.end(), back_inserter(data));
+			copy(right_vect.begin(), right_vect.end(), back_inserter(data));
+			copy(top_vect.begin(), top_vect.end(), back_inserter(data));
+
+			cout << "Sending frame: " << data.size() << endl;
+			sendto(sockfd, data.data(), data.size(), MSG_CONFIRM, (const struct sockaddr *) &serv_addr, sizeof(serv_addr));
+			cout << "Waiting to receive" << endl;
+			n = recvfrom(sockfd, buffer, 100, MSG_WAITALL, (struct sockaddr *) &serv_addr, &addr_len);
+			cout << "L: " << buffer[0] << " R: " << buffer[1] << " T: " << buffer[2] << endl;
+		}
+	}
+	close(sockfd);
+}
 
 bool is_stop_detected(Mat frame)
 {
@@ -362,8 +361,8 @@ int main(int argc, char* argv[])
 	pthread_t sonar_thread;
 	int sonar_thread_id = pthread_create(&sonar_thread, NULL, update_sonar, NULL);
 
-	//pthread_t socket_thread;
-	//int socket_thread_id = pthread_create(&socket_thread, NULL, sign_detection, NULL);
+	pthread_t socket_thread;
+	int socket_thread_id = pthread_create(&socket_thread, NULL, sign_detection, NULL);
 
 	pthread_t sign_thread;
 	int sign_thread_id = pthread_create(&sign_thread, NULL, sign_updater, NULL);
