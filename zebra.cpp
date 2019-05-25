@@ -6,16 +6,45 @@
 
 using namespace cv;
 using namespace std;
+int h = 0;
+int s = 0;
+int v=0;
+int hm = 0;
+int sm = 0;
+int vm =0;
+
+Scalar min_th = { 0, 0, 235 };
+Scalar max_th = { 100, 0, 255 };
+
+void update(int, void*)
+{
+    min_th = Scalar(h, s, v);
+    max_th = Scalar(hm, sm, vm);
+}
+
+Mat image;
 
 int main() {
-    Mat image;
-    image = imread("../files/zebra.png", IMREAD_COLOR);
+    image = imread("../files/zebra-test.jpg", IMREAD_COLOR);
     if (image.empty()) {
         return 0;
     }
+
+    namedWindow("Controls", WINDOW_GUI_NORMAL);
+    createTrackbar("H", "Controls", &h, 255, update);
+    createTrackbar("S", "Controls", &s, 255, update);
+    createTrackbar("V", "Controls", &v, 255, update);
+
+    createTrackbar("HM", "Controls", &hm, 255, update);
+    createTrackbar("SM", "Controls", &sm, 255, update);
+    createTrackbar("VM", "Controls", &vm, 255, update);
+
     Mat gray;
+    imshow("org", image);
     image.convertTo(image, -1, 1.3, 10);
-    Mat hsv = thresh_frame_in_HSV(image, Scalar(0, 0, 235), Scalar(100, 0, 255), false);
+
+    Mat hsv = thresh_frame_in_HSV(image, min_th, max_th, false);
+
     Canny(hsv, gray, 100, 200, 3);
     imshow("Canny", gray);
     vector<vector<Point>> contours;
@@ -39,6 +68,7 @@ int main() {
             }
         }
     }
+    cout << count << endl;
     waitKey(0);
     return 0;
 }

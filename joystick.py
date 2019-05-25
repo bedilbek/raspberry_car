@@ -146,6 +146,7 @@ try:
             message = message + chr(steering_direction)
             message = message + chr(abs(int(latest_steering_value)))
             message = message + chr(int(started))
+            print started
             if args['socket']:
                 sent = sock.sendto(bytes(message), server_address)
 

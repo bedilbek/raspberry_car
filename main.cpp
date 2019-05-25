@@ -20,10 +20,13 @@
 #include <uuid/uuid.h>
 #include <getopt.h>
 #include <string>
+#include <pthread.h>
 
 using namespace std;
 using namespace raspicam;
 using namespace cv;
+
+int sign_counter = -1;
 
 Controller controller;
 RaspiCam_Cv raspiCam_cv;
@@ -89,6 +92,17 @@ void  signal_handler(int signum)
     exit(signum);
 }
 
+void *sign_updater(void*)
+{
+    datagram_socket_server *s = new datagram_socket_server(8073, "localhost", true, true);
+    char message[1];
+    while (1)
+    {
+        s->receive(message, 1);
+        sign_counter = (int) message[0];
+    }
+}
+
 char* generate_name()
 {
     uuid_t  uuid4;
@@ -102,7 +116,64 @@ char* generate_name()
     uuid[40] = '\0';
     return uuid;
 }
-void video_writer()
+
+int is_left_detected(Mat frame)
+{
+    int scale = 2;
+    Mat img;
+    Mat kernel = Mat(3, 3, CV_8UC1, Scalar(1));
+    resize(frame, img, Size(frame.cols / scale, frame.rows / scale));
+    Mat3b bgr_inv = ~img;
+    Mat3b hsv_inv;
+    cvtColor(bgr_inv, hsv_inv, COLOR_BGR2HSV);
+    Mat1b mask;
+    inRange(hsv_inv, Scalar(0 - 15, 40, 200), Scalar(0 + 15, 255, 255), mask); // Cyan is 90
+    imshow("Before", mask);
+    waitKey(0);
+    erode(mask, mask, kernel);
+
+    vector<Point> points;
+    findNonZero(mask, points);
+    cout << "points size: " << points.size() << endl;
+    if (points.size() > 40)
+    {
+        Point2f center;
+        float radius;
+        minEnclosingCircle(points, center, radius);
+        cout << "R: " << radius << " A: " << points.size() / (3.14*radius*radius) << endl;
+
+
+        if (radius < (55 / scale) && radius > (32 / scale) && points.size() / (3.14*radius*radius) > 0.5)
+        {
+            circle(mask, center, radius, 150);
+
+            imshow("Ar", mask);
+            waitKey();
+
+            vector<int> sum;
+            reduce(mask, sum, 0, REDUCE_SUM);
+            double min, max;
+            int min_idx, max_idx;
+            minMaxIdx(sum, &min, &max, &min_idx, &max_idx);
+            cout << min_idx << "  " << max_idx << endl;
+
+            if (min_idx > max_idx)
+            {
+                //cout << "Right" << endl;
+                return 1;
+            }
+            else
+            {
+                //cout << "Left" << endl;
+                return -1;
+            }
+        }
+    }
+
+    return 0;
+}
+
+void * video_writer(void*)
 {
 	raspiCam_cv.set(CAP_PROP_FPS, video_frame_rate);
 	raspiCam_cv.set(CAP_PROP_FRAME_HEIGHT, video_frame_height);
@@ -127,6 +198,7 @@ void video_writer()
 
     while (true)
     {
+        cout << "thread, started: " << started << endl;
         if (started) {
             if (debugging && recording)
                 cout << "VideoCapture is being started for recording" << endl;
@@ -197,15 +269,17 @@ void mode_joystick()
 
 	controller.init_dc_motor();
 	cout << "ready to receive" << endl;
-	while (1)
+    while (1)
 	{
-		s->receive(message, 1024);
-		speed = (int)message[0] == 0 ? ((int)message[1]) * -1 : (int) message[1];
-		steering = (int)message[2] == 0 ? ((int)message[3]) : (int) message[3] * -1;
-		started = (int) message[4] == 1;
-		controller.turn(steering, speed);
+        s->receive(message, 1024);
+        speed = (int)message[0] == 0 ? ((int)message[1]) * -1 : (int) message[1];
+        steering = (int)message[2] == 0 ? ((int)message[3]) : (int) message[3] * -1;
+        started = (int) message[4] == 1;
+        cout << "message: " << (int) message[4] << endl;
+        cout << "started: " << started << endl;
+        controller.turn(steering, speed);
 		if (debugging)
-            cout <<"::::" << message << "::::" << "speed: " << speed << " steering: " << steering <<  endl;
+            cout <<"::::" << message << "::::" << "speed: " << speed << " steering: " << steering << " started: " << started << endl;
 		delay(20);
 	}
 
@@ -222,7 +296,10 @@ void mode_algorithm()
 }
 
 int main(int argc, char **argv) {
+    Mat img = imread("files/left1.jpg");
+    is_left_detected(img);
 
+    return 0;
 	const char* const short_options = "m:p:s:drf:w:g:a:lh";
 	const option long_options[] = {
 			{"mode",            required_argument,  nullptr, 'm'},
@@ -240,7 +317,11 @@ int main(int argc, char **argv) {
 			{nullptr,           no_argument,        nullptr, 0}
 	};
 
-    std::thread v(video_writer);
+    pthread_t video_writer_thread;
+    pthread_t sign_thread;
+    int video_writer_thread_id = pthread_create(&video_writer_thread, NULL, sign_updater, NULL);
+    int sign_thread_id = pthread_create(&sign_thread, NULL, video_writer, NULL);
+
 
 	int opt;
 	while ( ( opt = getopt_long(argc, argv, short_options, long_options, nullptr)) != -1)

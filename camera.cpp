@@ -4,46 +4,56 @@
 #include "raspicam/raspicam_cv.h"
 #include <fstream>
 #include <ctime>
+#include <csignal>
 #include "opencv2/opencv.hpp"
 
 using namespace std;
+using namespace raspicam;
+using namespace cv;
+
+int video_frame_rate = 24;
+int video_frame_width = 640;
+int video_frame_height = 480;
+
+RaspiCam_Cv raspiCam_cv;
+VideoWriter videoWriter;
+
+void  signal_handler(int signum)
+{
+
+    cout << "Interrupt signal - " << signum << " received.\n";
+
+    raspiCam_cv.release();
+    videoWriter.release();
+    cout << "Everything is saved" << endl;
+    exit(signum);
+}
+
 
 int main() {
+    signal(SIGINT, signal_handler);
+
     cv::Mat image;
 
-    raspicam::RaspiCam_Cv camera;
-    camera.set(CV_CAP_PROP_FORMAT, CV_8UC1);
-    camera.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
-    camera.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
-    camera.set(cv::CAP_PROP_FPS, 15);
 
-    camera.open();
+    raspiCam_cv.set(CAP_PROP_FPS, video_frame_rate);
+    raspiCam_cv.set(CAP_PROP_FRAME_HEIGHT, video_frame_height);
+    raspiCam_cv.set(CAP_PROP_FRAME_WIDTH, video_frame_width);
+    raspiCam_cv.setVideoStabilization(true);
+    videoWriter = VideoWriter();
+    raspiCam_cv.open();
 
-    int frame_width = camera.get(CV_CAP_PROP_FRAME_WIDTH);
-    int frame_height = camera.get(CV_CAP_PROP_FRAME_HEIGHT);
-    int frame_rate = camera.get(CV_CAP_PROP_FPS);
+    double frame_rate = raspiCam_cv.get(CAP_PROP_FPS);
+    double frame_width = raspiCam_cv.get(CAP_PROP_FRAME_WIDTH);
+    double frame_height = raspiCam_cv.get(CAP_PROP_FRAME_HEIGHT);
 
-    cv::VideoWriter video("output.avi", CV_FOURCC('M', 'J', 'P', 'G'), frame_rate, cv::Size(frame_width, frame_height), true);
-
-    if (!camera.isOpened() || !video.isOpened()) {
-        std::cout << "Could not initialize capturing or writing...\n";
-        std::cout << std::endl;
-        return 0;
-    }
-
-    video.release();
+    videoWriter.open("output.avi", CV_FOURCC('M', 'J', 'P', 'G'), frame_rate, cv::Size(frame_width, frame_height), true);
 
     while (1) {
-        camera.grab();
-        camera.retrieve(image);
-//        cout << "rows: " << image.rows << endl << "cols: " << image.cols << endl;
-        cv::imshow("hello", image);
-		
-        char c = (char) cv::waitKey(1);
-        if (c == 27) break;
+        raspiCam_cv.grab();
+        raspiCam_cv.retrieve(image);
+        videoWriter.write(image);
     }
-    camera.release();
-    video.release();
 
     return 0;
 }
